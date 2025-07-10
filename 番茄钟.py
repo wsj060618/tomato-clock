@@ -196,21 +196,63 @@ class PomodoroTimer:
         self.update_display()
 
     def show_settings(self):
-        work = simpledialog.askinteger("设置工作时间", "请输入工作时间（分钟）:",
-                                      initialvalue=self.work_duration // 60)
-        if work and work > 0:
-            self.work_duration = work * 60
+        settings_window = tk.Toplevel(self.root)
+        settings_window.title("设置时间")
+        settings_window.configure(bg="#2D2D2D")
+        # 设置窗口大小和主界面相近
+        settings_window.geometry("250x200")
+        
+        # 添加拖动功能
+        _offset_x = 0
+        _offset_y = 0
+        
+        def on_drag_start(event):
+            nonlocal _offset_x, _offset_y
+            _offset_x = event.x
+            _offset_y = event.y
 
-        break_time = simpledialog.askinteger("设置休息时间", "请输入休息时间（分钟）:",
-                                           initialvalue=self.break_duration // 60)
-        if break_time and break_time > 0:
-            self.break_duration = break_time * 60
+        def on_drag_motion(event):
+            x = settings_window.winfo_x() + event.x - _offset_x
+            y = settings_window.winfo_y() + event.y - _offset_y
+            settings_window.geometry(f"+{x}+{y}")
 
-        if self.is_working:
-            self.current_duration = self.work_duration
-        else:
-            self.current_duration = self.break_duration
-        self.reset_timer()
+        settings_window.bind('<Button-1>', on_drag_start)
+        settings_window.bind('<B1-Motion>', on_drag_motion)
+
+        # 工作时间设置
+        tk.Label(settings_window, text="工作时间（分钟）:", font=('Helvetica', 12),
+                 fg='white', bg='#2D2D2D').pack(pady=8, padx=20)
+        work_entry = tk.Entry(settings_window, font=('Helvetica', 12), bg="#2D2D2D", fg="white", insertbackground='white')
+        work_entry.insert(0, str(self.work_duration // 60))
+        work_entry.pack(pady=5, padx=20)
+
+        # 休息时间设置
+        tk.Label(settings_window, text="休息时间（分钟）:", font=('Helvetica', 12),
+                 fg='white', bg='#2D2D2D').pack(pady=8, padx=20)
+        break_entry = tk.Entry(settings_window, font=('Helvetica', 12), bg="#2D2D2D", fg="white", insertbackground='white')
+        break_entry.insert(0, str(self.break_duration // 60))
+        break_entry.pack(pady=5, padx=20)
+
+        def save_settings():
+            try:
+                work = int(work_entry.get())
+                break_time = int(break_entry.get())
+                if work > 0 and break_time > 0:
+                    self.work_duration = work * 60
+                    self.break_duration = break_time * 60
+                    if self.is_working:
+                        self.current_duration = self.work_duration
+                    else:
+                        self.current_duration = self.break_duration
+                    self.reset_timer()
+                    settings_window.destroy()
+            except ValueError:
+                messagebox.showerror("输入错误", "请输入有效的整数")
+
+        tk.Button(settings_window, text="保存", command=save_settings,
+                 font=('Helvetica', 11), fg='white', bg='#3D3D3D',
+                 activeforeground='white', activebackground='#4D4D4D',
+                 relief=tk.FLAT, width=6, height=4).pack(pady=20)
 
     def update_ball_display(self, current=None):
         if current is None:
