@@ -114,7 +114,8 @@ class PomodoroTimer:
 
     def toggle_mode(self):
         self.countdown_mode = not self.countdown_mode
-        self.mode_btn.config(text="正计时" if self.countdown_mode else "倒计时")
+        self.mode_btn.config(text="倒计时" if self.countdown_mode else "正计时")
+        print(f"当前计时模式: {'倒计时' if self.countdown_mode else '正计时'}")
         self.reset_timer()
 
     def set_window_position(self):
@@ -252,11 +253,6 @@ class PomodoroTimer:
             self.ball_window.bind("<Button-1>", self.on_ball_drag_start)
             self.ball_window.bind("<B1-Motion>", self.on_ball_drag_motion)
             self.ball_window.bind("<Double-Button-1>", self.restore_from_ball)
-            self.update_ball_color()
-
-    def update_ball_color(self):
-        canvas = self.ball_window.winfo_children()[0]
-        canvas.itemconfig(1, fill="#FF6B6B" if self.is_working else "#6BFF6B")
 
     def on_ball_drag_start(self, event):
         self.ball_x_offset = event.x
