@@ -33,7 +33,7 @@ DEFAULT_CONFIG = {
 # 主题调色板
 THEMES = {
     "dark": {
-        "magic": "#010203",
+        "magic": "#1A1828",
         "card": "#1E1B2E",
         "card2": "#2A2740",
         "card3": "#37314F",
