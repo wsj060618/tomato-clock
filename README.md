@@ -140,3 +140,6 @@ git push origin master --tags
 4. 推送分支到你的远程仓库：`git push origin feature/your-feature-name`。
 5. 在GitHub上创建一个Pull Request。
 
+## 许可证
+本项目基于 [MIT License](LICENSE) 开源。
+
