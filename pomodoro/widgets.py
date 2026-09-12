@@ -9,9 +9,10 @@ from .constants import FONT
 from .theme import sp
 
 try:
-    from PIL import Image, ImageDraw, ImageTk, ImageFont
+    from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageTk
 except ImportError:
     Image = ImageDraw = ImageTk = None
+    ImageChops = ImageFilter = None
     ImageFont = None
 
 _FONT_CANDIDATES = (
@@ -31,6 +32,16 @@ def _load_font(size):
     return ImageFont.load_default()
 
 
+def _shade(color, factor):
+    """按比例调亮(factor>1)/调暗(factor<1)颜色，支持 #RRGGBB 或 RGB 元组。"""
+    if isinstance(color, str):
+        c = color.lstrip("#")
+        rgb = tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+    else:
+        rgb = tuple(color[:3])
+    return tuple(min(255, max(0, round(v * factor))) for v in rgb)
+
+
 def ball_image(diameter, fill, outline, ring, text, text_color, font_size):
     """生成带真实 alpha 的悬浮球 RGBA 图片（供逐像素透明贴图）。"""
     s = 4
@@ -40,6 +51,31 @@ def ball_image(diameter, fill, outline, ring, text, text_color, font_size):
     shape = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     ImageDraw.Draw(shape).ellipse([inset, inset, size - 1 - inset, size - 1 - inset],
                                   fill=fill, outline=outline, width=rw)
+
+    # 内盘轻微立体明暗，避免纯平色显得不圆
+    inner = [inset + rw, inset + rw, size - 1 - inset - rw, size - 1 - inset - rw]
+    iw, ih = inner[2] - inner[0], inner[3] - inner[1]
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse(inner, fill=255)
+
+    hl = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    ImageDraw.Draw(hl).ellipse(
+        [inner[0] + iw * 0.10, inner[1] + ih * 0.08,
+         inner[0] + iw * 0.70, inner[1] + ih * 0.62],
+        fill=_shade(fill, 2.0) + (90,))
+    hl = hl.filter(ImageFilter.GaussianBlur(size * 0.06))
+    hl.putalpha(ImageChops.multiply(hl.getchannel("A"), mask))
+    shape = Image.alpha_composite(shape, hl)
+
+    sh = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).ellipse(
+        [inner[0] + iw * 0.20, inner[1] + ih * 0.55,
+         inner[2], inner[3] + ih * 0.06],
+        fill=(0, 0, 0, 90))
+    sh = sh.filter(ImageFilter.GaussianBlur(size * 0.06))
+    sh.putalpha(ImageChops.multiply(sh.getchannel("A"), mask))
+    shape = Image.alpha_composite(shape, sh)
+
     shape = shape.resize((diameter, diameter), Image.LANCZOS)
     draw = ImageDraw.Draw(shape)
     font = _load_font(font_size)
