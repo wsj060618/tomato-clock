@@ -17,7 +17,7 @@ VSVersionInfo(
         [StringStruct('FileDescription', '番茄钟'),
         StringStruct('FileVersion', '2.1.0'),
         StringStruct('InternalName', '番茄钟'),
-        StringStruct('OriginalFilename', '番茄钟.exe'),
+        StringStruct('OriginalFilename', '番茄钟-v2.1.0.exe'),
         StringStruct('ProductName', '番茄钟'),
         StringStruct('ProductVersion', '2.1.0')])
       ]),

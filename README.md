@@ -86,7 +86,7 @@ pip install -r requirements.txt pyinstaller
 python tools/make_version_info.py   # 依据 __version__ 生成版本信息
 pyinstaller 番茄钟.spec
 ```
-生成物在 `dist/番茄钟.exe`，其文件属性中会写入版本号（如 `2.1.0`）。图标与托盘图标同源：
+生成物在 `dist/番茄钟-v<版本>.exe`（如 `dist/番茄钟-v2.1.0.exe`），文件名与文件属性中都带版本号。图标与托盘图标同源：
 - exe 图标：`assets/tomato.ico`
 - 托盘图标：`assets/tomato.png`（打包时通过 `datas` 一并带入）
 

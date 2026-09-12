@@ -32,7 +32,7 @@ TEMPLATE = """VSVersionInfo(
         [StringStruct('FileDescription', '番茄钟'),
         StringStruct('FileVersion', '{ver}'),
         StringStruct('InternalName', '番茄钟'),
-        StringStruct('OriginalFilename', '番茄钟.exe'),
+        StringStruct('OriginalFilename', '番茄钟-v{ver}.exe'),
         StringStruct('ProductName', '番茄钟'),
         StringStruct('ProductVersion', '{ver}')])
       ]),

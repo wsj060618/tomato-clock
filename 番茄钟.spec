@@ -1,5 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import sys
+
+sys.path.insert(0, SPECPATH)
+from pomodoro import __version__  # noqa: E402
+
+APP_NAME = f"番茄钟-v{__version__}"
 
 a = Analysis(
     ['main.py'],
@@ -22,7 +29,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='番茄钟',
+    name=APP_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
