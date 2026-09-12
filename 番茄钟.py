@@ -61,6 +61,7 @@ DEFAULT_CONFIG = {
     "sound": True,
     "tray": True,
     "task": "",
+    "task_date": "",
     "window_pos": None,
 }
 
@@ -264,7 +265,12 @@ class PomodoroTimer:
         self.tray_available = pystray is not None and Image is not None and ImageDraw is not None
         self.tray_on = bool(self.config["tray"]) and self.tray_available
         self.countdown_mode = bool(self.config["countdown_mode"])
-        self.task_name = self.config.get("task", "")
+        self.current_day = self.today_key()
+        if self.config.get("task_date") != self.current_day:
+            self.task_name = ""
+            self.config["task_date"] = self.current_day
+        else:
+            self.task_name = self.config.get("task", "")
         self.cycle_completed = int(self.stats.get("cycle_completed", 0))
 
         self.current_duration = self.work_duration
@@ -298,6 +304,7 @@ class PomodoroTimer:
         self.restore_window_position()
         self._bind_shortcuts()
         self.start_tray()
+        self.root.after(30000, self._check_day_rollover)
 
     # ----------------------------- 持久化 -----------------------------
     @staticmethod
@@ -338,6 +345,7 @@ class PomodoroTimer:
             "sound": self.sound_on,
             "tray": self.tray_on,
             "task": self.task_name,
+            "task_date": self.current_day,
         })
         self._write_json(CONFIG_PATH, self.config)
 
@@ -644,6 +652,26 @@ class PomodoroTimer:
             self.update_ball_display()
 
     # ----------------------------- 任务 -----------------------------
+    def set_task(self, name):
+        self.task_name = (name or "").strip()
+        self.current_day = self.today_key()
+        self.config["task"] = self.task_name
+        self.config["task_date"] = self.current_day
+        if hasattr(self, "task_label"):
+            self.task_label.config(
+                text=self.task_name or "＋ 点击设置任务",
+                fg=self.palette["text"] if self.task_name else self.palette["muted"])
+        self.save_config()
+
+    def _check_day_rollover(self):
+        today = self.today_key()
+        if today != self.current_day:
+            self.current_day = today
+            if self.task_name:
+                self.set_task("")
+            self.update_stats_label()
+        self.root.after(30000, self._check_day_rollover)
+
     def edit_task(self):
         p = self.palette
         dlg = tk.Toplevel(self.root)
@@ -674,11 +702,7 @@ class PomodoroTimer:
         entry.select_range(0, "end")
 
         def confirm(_=None):
-            self.task_name = entry.get().strip()
-            self.task_label.config(
-                text=self.task_name or "＋ 点击设置任务",
-                fg=p["text"] if self.task_name else p["muted"])
-            self.save_config()
+            self.set_task(entry.get())
             dlg.destroy()
 
         entry.bind("<Return>", confirm)
