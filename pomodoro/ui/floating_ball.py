@@ -1,10 +1,15 @@
-"""最小化后的圆形悬浮球。"""
+"""最小化后的圆形悬浮球。
+
+优先使用 Windows 逐像素 alpha 分层窗口，边缘真正抗锯齿；
+不可用时退回色键透明 + Pillow 绘制。
+"""
 
 import tkinter as tk
 
+from .. import layered
 from ..constants import FONT
-from ..theme import sp, blend
-from ..widgets import paint_ball
+from ..theme import sp
+from ..widgets import paint_ball, ball_image, _has_pillow
 
 
 class FloatingBall:
@@ -17,6 +22,8 @@ class FloatingBall:
         self._x_offset = 0
         self._y_offset = 0
         self._accent = None
+        self._text = "25:00"
+        self._layered = False
 
     @property
     def visible(self):
@@ -32,18 +39,26 @@ class FloatingBall:
         self.window = ball
         ball.overrideredirect(True)
         ball.wm_attributes("-topmost", 1)
-        ball.configure(bg=app.accent)
-        self._set_transparent(app.accent)
+        self._layered = layered.available() and _has_pillow()
+        if self._layered:
+            ball.configure(bg=p["card"])
+        else:
+            ball.configure(bg=app.accent)
+            self._set_transparent(app.accent)
 
         x = ball.winfo_screenwidth() - d - sp(10)
         ball.geometry(f"{d}x{d}+{x}+{sp(10)}")
 
-        self.canvas = tk.Canvas(ball, width=d, height=d, bg=app.accent, highlightthickness=0)
-        self.canvas.pack()
-        self.time_label = tk.Label(ball, font=(FONT, 11, "bold"), fg=p["text"], bg=p["card"])
-        self.time_label.place(relx=0.5, rely=0.5, anchor="center")
-        self._paint()
-        self.update()
+        if self._layered:
+            ball.update_idletasks()
+        else:
+            self.canvas = tk.Canvas(ball, width=d, height=d, bg=app.accent,
+                                    highlightthickness=0)
+            self.canvas.pack()
+            self.time_label = tk.Label(ball, font=(FONT, 11, "bold"),
+                                       fg=p["text"], bg=p["card"])
+            self.time_label.place(relx=0.5, rely=0.5, anchor="center")
+        self._render()
 
         ball.bind("<Button-1>", self._on_drag_start)
         ball.bind("<B1-Motion>", self._on_drag_motion)
@@ -58,7 +73,9 @@ class FloatingBall:
         self.window = None
         self.canvas = None
         self.time_label = None
+        self._accent = None
 
+    # ----------------------------- 绘制 -----------------------------
     def _set_transparent(self, color):
         if self.window is None:
             return
@@ -67,39 +84,40 @@ class FloatingBall:
         except tk.TclError:
             pass
 
-    def _paint(self):
-        if self.canvas is None:
+    def _render(self):
+        if self.window is None:
             return
         app = self.app
         p = app.palette
-        # 用当前强调色作为透明键，圆环用几乎同色的近色，
-        # 使抗锯齿边缘过渡到自身颜色，避免黑/白毛边与锯齿。
-        magic = app.accent
-        ring = blend(app.accent, "#FFFFFF", 0.05)
-        paint_ball(self.canvas, self.radius * 2, p["card"], ring, sp(4), magic)
-        self.canvas.configure(bg=magic)
-        if self.window is not None:
-            self.window.configure(bg=magic)
-        self._set_transparent(magic)
+        d = self.radius * 2
+        if self._layered:
+            img = ball_image(d, p["card"], app.accent, sp(4), self._text,
+                             p["text"], int(round(sp(14))))
+            layered.set_image(layered._hwnd_of(self.window), img,
+                              self.window.winfo_x(), self.window.winfo_y())
+        else:
+            if self.canvas is None:
+                return
+            paint_ball(self.canvas, d, p["card"], app.accent, sp(4), app.accent)
+            self.canvas.configure(bg=app.accent)
+            self.window.configure(bg=app.accent)
+            self._set_transparent(app.accent)
+            if self.time_label is not None:
+                self.time_label.configure(text=self._text)
         self._accent = app.accent
 
     def update(self, current=None):
         if current is None:
             current = self.app.core.display_value()
-        minutes = int(current // 60)
-        seconds = int(current % 60)
-        if self.time_label is not None:
-            self.time_label.config(text=f"{minutes:02d}:{seconds:02d}")
-        if self.canvas is not None and self.app.accent != self._accent:
-            self._paint()
+        text = f"{int(current // 60):02d}:{int(current % 60):02d}"
+        if self.window is None:
+            return
+        if text != self._text or self.app.accent != self._accent:
+            self._text = text
+            self._render()
 
     def restyle(self):
-        if self.canvas is None:
-            return
-        self._paint()
-        if self.time_label is not None:
-            self.time_label.configure(bg=self.app.palette["card"],
-                                      fg=self.app.palette["text"])
+        self._render()
 
     def _on_drag_start(self, event):
         self._x_offset = event.x

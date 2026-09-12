@@ -9,9 +9,46 @@ from .constants import FONT
 from .theme import sp
 
 try:
-    from PIL import Image, ImageDraw, ImageTk
+    from PIL import Image, ImageDraw, ImageTk, ImageFont
 except ImportError:
     Image = ImageDraw = ImageTk = None
+    ImageFont = None
+
+_FONT_CANDIDATES = (
+    r"C:\Windows\Fonts\segoeuib.ttf",
+    r"C:\Windows\Fonts\arialbd.ttf",
+)
+
+
+def _load_font(size):
+    if ImageFont is None:
+        return None
+    for path in _FONT_CANDIDATES:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def ball_image(diameter, fill, outline, ring, text, text_color, font_size):
+    """生成带真实 alpha 的悬浮球 RGBA 图片（供逐像素透明贴图）。"""
+    s = 4
+    size = diameter * s
+    rw = max(1, int(ring * s))
+    inset = rw // 2
+    shape = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    ImageDraw.Draw(shape).ellipse([inset, inset, size - 1 - inset, size - 1 - inset],
+                                  fill=fill, outline=outline, width=rw)
+    shape = shape.resize((diameter, diameter), Image.LANCZOS)
+    draw = ImageDraw.Draw(shape)
+    font = _load_font(font_size)
+    if font is not None:
+        bbox = draw.textbbox((0, 0), text, font=font)
+        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+        draw.text(((diameter - tw) / 2 - bbox[0], (diameter - th) / 2 - bbox[1]),
+                  text, font=font, fill=text_color)
+    return shape
 
 
 def _has_pillow():
