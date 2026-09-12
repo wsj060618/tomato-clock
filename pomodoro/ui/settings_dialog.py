@@ -2,6 +2,7 @@
 
 import tkinter as tk
 
+from .. import __version__
 from ..constants import FONT, THEME_ORDER
 from ..theme import sp, blend
 from ..widgets import RoundedButton, SegmentedControl, Toggle, paint_card, enable_drag
@@ -126,6 +127,9 @@ class SettingsDialog:
                       fill=app.accent, fill_hover=blend(app.accent, "#FFFFFF", 0.25),
                       fg="#FFFFFF", font=(FONT, 11, "bold"), bg=p["card"]).place(
             relx=0.5, y=sp(344), anchor="n")
+
+        tk.Label(win, text=f"v{__version__}", font=(FONT, 8), fg=p["muted"],
+                 bg=p["card"]).place(x=sp(24), y=sp(378))
 
         # 窗口拖动
         enable_drag(win, canvas, win)

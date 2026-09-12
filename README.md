@@ -1,5 +1,7 @@
 # 番茄钟
 
+当前版本：**2.1.0**（版本历史见 [CHANGELOG.md](CHANGELOG.md)）
+
 ## 简介
 本项目是一个基于Python的番茄钟计时器应用，使用Tkinter库构建图形用户界面。番茄钟工作法是一种时间管理方法，将工作时间划分为25分钟的工作时段和5分钟的休息时段。该应用支持倒计时和正计时两种模式，还具备小球悬浮窗功能。
 
@@ -33,6 +35,8 @@ pip install -r requirements.txt
 番茄钟/
 ├── main.py                     # 程序入口
 ├── 番茄钟.spec                  # PyInstaller 打包配置
+├── version_info.txt            # exe 版本信息（由脚本生成）
+├── CHANGELOG.md                # 版本历史
 ├── pomodoro/
 │   ├── constants.py            # 常量、默认配置、主题配色
 │   ├── theme.py                # 主题、颜色工具与 DPI 缩放
@@ -78,12 +82,21 @@ python -m unittest discover -s tests -v
 
 ### 打包为 exe
 ```bash
-pip install pyinstaller
+pip install -r requirements.txt pyinstaller
+python tools/make_version_info.py   # 依据 __version__ 生成版本信息
 pyinstaller 番茄钟.spec
 ```
-生成物在 `dist/番茄钟.exe`。图标与托盘图标同源：
+生成物在 `dist/番茄钟.exe`，其文件属性中会写入版本号（如 `2.1.0`）。图标与托盘图标同源：
 - exe 图标：`assets/tomato.ico`
 - 托盘图标：`assets/tomato.png`（打包时通过 `datas` 一并带入）
+
+### 版本管理
+- 版本号唯一来源：`pomodoro/__init__.py` 的 `__version__`
+- 每次发布：更新 `__version__` → 运行 `python tools/make_version_info.py` → 更新 `CHANGELOG.md` → 打标签
+```bash
+git tag v2.1.0
+git push origin master --tags
+```
 
 ### 运行步骤(可执行文件)
 1. 下载可执行文件
