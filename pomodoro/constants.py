@@ -45,7 +45,7 @@ THEMES = {
         "long": "#9B87F5",
     },
     "light": {
-        "magic": "#010203",
+        "magic": "#FEFFFF",
         "card": "#FFFFFF",
         "card2": "#F0EEF7",
         "card3": "#E2DEF0",
