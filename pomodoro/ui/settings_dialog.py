@@ -1,11 +1,11 @@
 """设置对话框。"""
 
 import tkinter as tk
-from tkinter import messagebox
 
 from ..constants import FONT, THEME_ORDER
 from ..theme import sp, blend
 from ..widgets import RoundedButton, SegmentedControl, Toggle, paint_card, enable_drag
+from .prompt import MessageDialog
 
 
 class SettingsDialog:
@@ -97,7 +97,7 @@ class SettingsDialog:
                 if min(work, btime, ltime, cycles) <= 0:
                     raise ValueError
             except ValueError:
-                messagebox.showerror("输入错误", "请输入大于 0 的整数")
+                MessageDialog(app, "输入错误", "请输入大于 0 的整数").show()
                 return
 
             core.apply_settings(work, btime, ltime, cycles, auto_toggle.value)

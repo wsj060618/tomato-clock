@@ -2,11 +2,11 @@
 
 import tkinter as tk
 from datetime import date, datetime
-from tkinter import messagebox
 
 from ..constants import FONT
 from ..theme import sp
-from ..widgets import paint_card, enable_drag
+from ..widgets import RoundedButton, paint_card, enable_drag
+from .prompt import ConfirmDialog
 
 
 def _format_day(key):
@@ -57,12 +57,10 @@ class HistoryDialog:
         tk.Label(win, text="历史记录", font=(FONT, 13, "bold"), fg=p["text"],
                  bg=p["card"]).place(x=sp(24), y=sp(16))
 
-        clear_btn = tk.Label(win, text="清空", font=(FONT, 9), fg=p["muted"], bg=p["card"],
-                             cursor="hand2")
-        clear_btn.place(relx=1.0, x=sp(-52), y=sp(18), anchor="ne")
-        clear_btn.bind("<Button-1>", lambda e: self._clear_all())
-        clear_btn.bind("<Enter>", lambda e: clear_btn.config(fg=p["work"]))
-        clear_btn.bind("<Leave>", lambda e: clear_btn.config(fg=p["muted"]))
+        RoundedButton(win, "清空", self._clear_all, width=52, height=26, radius=13,
+                      fill=p["card2"], fill_hover=p["card3"], fg=p["muted"],
+                      font=(FONT, 9), bg=p["card"]).place(
+            relx=1.0, x=sp(-50), y=sp(13), anchor="ne")
 
         close_btn = tk.Label(win, text="✕", font=(FONT, 12), fg=p["muted"], bg=p["card"],
                              cursor="hand2")
@@ -153,8 +151,10 @@ class HistoryDialog:
 
     # ----------------------------- 删除 -----------------------------
     def _delete_day(self, key):
-        if not messagebox.askyesno("删除记录", f"确定删除 {_format_day(key)} 的记录吗？",
-                                   parent=self.win):
+        ok = ConfirmDialog(self.app, "删除记录",
+                           f"确定删除「{_format_day(key)}」的记录吗？",
+                           confirm_text="删除", parent=self.win).show()
+        if not ok:
             return
         self.app.stats.get("daily", {}).pop(key, None)
         self.app.save_stats()
@@ -165,8 +165,10 @@ class HistoryDialog:
         daily = self.app.stats.get("daily", {})
         if not daily:
             return
-        if not messagebox.askyesno("清空历史", "确定清空全部历史记录吗？此操作不可恢复。",
-                                   parent=self.win):
+        ok = ConfirmDialog(self.app, "清空历史",
+                           "确定清空全部历史记录吗？此操作不可恢复。",
+                           confirm_text="清空", parent=self.win).show()
+        if not ok:
             return
         self.app.stats["daily"] = {}
         self.app.save_stats()
