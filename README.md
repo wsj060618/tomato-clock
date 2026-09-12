@@ -32,7 +32,7 @@ pip install -r requirements.txt
 ```
 番茄钟/
 ├── main.py                     # 程序入口
-├── 番茄钟.py                    # 兼容入口（等价于 main.py）
+├── 番茄钟.spec                  # PyInstaller 打包配置
 ├── pomodoro/
 │   ├── constants.py            # 常量、默认配置、主题配色
 │   ├── theme.py                # 主题、颜色工具与 DPI 缩放
@@ -70,7 +70,6 @@ cd D:\coding\番茄钟
 ```bash
 python main.py
 ```
-（`python 番茄钟.py` 亦可，二者等价）
 
 ### 运行测试
 ```bash
