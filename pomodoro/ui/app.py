@@ -9,6 +9,7 @@ from ..timer import TimerCore
 from ..tray import TrayController
 from ..widgets import RoundedButton, SegmentedControl, create_round_rect
 from .floating_ball import FloatingBall
+from .history_dialog import HistoryDialog
 from .settings_dialog import SettingsDialog
 from .task_dialog import TaskDialog
 from .toast import ToastManager
@@ -69,6 +70,8 @@ class PomodoroApp:
         self.root.bind_all("<Escape>", lambda e: self._hotkey(self.custom_iconify))
         self.root.bind_all("<KeyPress-s>", lambda e: self._hotkey(self.show_settings))
         self.root.bind_all("<KeyPress-S>", lambda e: self._hotkey(self.show_settings))
+        self.root.bind_all("<KeyPress-h>", lambda e: self._hotkey(self.show_history))
+        self.root.bind_all("<KeyPress-H>", lambda e: self._hotkey(self.show_history))
 
     def _hotkey(self, action):
         try:
@@ -137,8 +140,11 @@ class PomodoroApp:
 
         # 统计
         self.stats_label = tk.Label(self.root, text="", font=(FONT, 9),
-                                    fg=p["muted"], bg=p["card"])
+                                    fg=p["muted"], bg=p["card"], cursor="hand2")
         self.stats_label.place(relx=0.5, y=sp(310), anchor="n")
+        self.stats_label.bind("<Button-1>", lambda e: self.show_history())
+        self.stats_label.bind("<Enter>", lambda e: self.stats_label.config(fg=self.accent))
+        self.stats_label.bind("<Leave>", lambda e: self.stats_label.config(fg=p["muted"]))
 
         # 模式切换
         self.mode_control = SegmentedControl(
@@ -288,9 +294,12 @@ class PomodoroApp:
     def update_stats_label(self):
         count, minutes = self.core.today_stats()
         if hasattr(self, "stats_label"):
-            self.stats_label.config(text=f"今日 {count} 个 · 专注 {minutes} 分钟")
+            self.stats_label.config(text=f"今日 {count} 个 · 专注 {minutes} 分钟 ›")
         if self.ball.visible:
             self.ball.update()
+
+    def show_history(self):
+        HistoryDialog(self).show()
 
     # ----------------------------- 任务 -----------------------------
     def set_task(self, name):
