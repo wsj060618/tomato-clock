@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 from ..constants import FONT
 from ..theme import sp
-from ..widgets import create_round_rect
+from ..widgets import create_round_rect, enable_drag
 
 
 def _format_day(key):
@@ -90,6 +90,7 @@ class HistoryDialog:
             container.yview_scroll(int(-event.delta / 120), "units")
 
         win.bind("<MouseWheel>", on_wheel)
+        enable_drag(win, canvas, win)
 
         if not daily:
             tk.Label(inner, text="还没有完成记录\n完成一个番茄后就会出现在这里",

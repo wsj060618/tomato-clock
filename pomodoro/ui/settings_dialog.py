@@ -5,7 +5,7 @@ from tkinter import messagebox
 
 from ..constants import FONT, THEME_ORDER
 from ..theme import sp, blend
-from ..widgets import RoundedButton, SegmentedControl, Toggle, create_round_rect
+from ..widgets import RoundedButton, SegmentedControl, Toggle, create_round_rect, enable_drag
 
 
 class SettingsDialog:
@@ -128,15 +128,4 @@ class SettingsDialog:
             relx=0.5, y=sp(344), anchor="n")
 
         # 窗口拖动
-        drag = {"x": 0, "y": 0}
-
-        def start(e):
-            drag["x"] = e.x_root - win.winfo_x()
-            drag["y"] = e.y_root - win.winfo_y()
-
-        def move(e):
-            win.geometry(f"+{e.x_root - drag['x']}+{e.y_root - drag['y']}")
-
-        for w in (canvas, win):
-            w.bind("<Button-1>", start)
-            w.bind("<B1-Motion>", move)
+        enable_drag(win, canvas, win)

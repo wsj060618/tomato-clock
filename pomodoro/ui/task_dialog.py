@@ -4,7 +4,7 @@ import tkinter as tk
 
 from ..constants import FONT
 from ..theme import sp, blend
-from ..widgets import RoundedButton, create_round_rect
+from ..widgets import RoundedButton, create_round_rect, enable_drag
 
 
 class TaskDialog:
@@ -56,3 +56,5 @@ class TaskDialog:
                       fill=app.accent, fill_hover=blend(app.accent, "#FFFFFF", 0.25),
                       fg="#FFFFFF", font=(FONT, 10, "bold"), bg=p["card"]).place(
             relx=1.0, x=sp(-24), y=sp(102), anchor="ne")
+
+        enable_drag(dlg, canvas, dlg)

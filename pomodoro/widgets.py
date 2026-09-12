@@ -6,6 +6,22 @@ from .constants import FONT
 from .theme import sp
 
 
+def enable_drag(window, *widgets):
+    """让无边框 window 可以通过拖动指定控件来移动。"""
+    state = {"x": 0, "y": 0}
+
+    def on_start(event):
+        state["x"] = event.x_root - window.winfo_x()
+        state["y"] = event.y_root - window.winfo_y()
+
+    def on_move(event):
+        window.geometry(f"+{event.x_root - state['x']}+{event.y_root - state['y']}")
+
+    for widget in widgets:
+        widget.bind("<Button-1>", on_start, add="+")
+        widget.bind("<B1-Motion>", on_move, add="+")
+
+
 def create_round_rect(canvas, x1, y1, x2, y2, r, **kwargs):
     """在 canvas 上画一个圆角矩形，返回图元 id。"""
     points = [
