@@ -13,8 +13,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "assets")
 PREVIEW = os.path.join(ROOT, "tools", "preview.png")
 
-TILE_TOP = (44, 40, 66)
-TILE_BOTTOM = (24, 21, 38)
+TILE_TOP = (255, 255, 255)
+TILE_BOTTOM = (243, 241, 250)
+TILE_BORDER = (224, 220, 236)
 BODY = (232, 84, 84)
 BODY_HILIGHT = (255, 150, 150)
 LEAF = (61, 190, 107)
@@ -40,8 +41,21 @@ def make_icon():
         [0, 0, SIZE - 1, SIZE - 1], radius=radius, fill=255)
     img.paste(vertical_gradient(SIZE, TILE_TOP, TILE_BOTTOM).convert("RGBA"), (0, 0), tile_mask)
 
+    # 淡描边，避免白底在白背景上消失
+    ImageDraw.Draw(img).rounded_rectangle(
+        [SIZE * 0.006, SIZE * 0.006, SIZE - SIZE * 0.006, SIZE - SIZE * 0.006],
+        radius=radius, outline=TILE_BORDER + (255,), width=max(1, int(SIZE * 0.007)))
+
     cx, cy = SIZE * 0.5, SIZE * 0.57
     rx, ry = SIZE * 0.30, SIZE * 0.285
+
+    # 番茄底部投影
+    shadow = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).ellipse(
+        [cx - rx * 0.92, cy + ry * 0.55, cx + rx * 0.92, cy + ry * 1.18],
+        fill=(150, 145, 175, 110))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(SIZE * 0.035))
+    img = Image.alpha_composite(img, shadow)
 
     # 番茄本体
     body_mask = Image.new("L", (SIZE, SIZE), 0)
