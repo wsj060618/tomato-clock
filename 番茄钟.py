@@ -665,7 +665,7 @@ class PomodoroTimer:
 
     def _check_day_rollover(self):
         today = self.today_key()
-        if today != self.current_day:
+        if today != self.current_day and not self.is_running and self.elapsed_time == 0:
             self.current_day = today
             if self.task_name:
                 self.set_task("")
