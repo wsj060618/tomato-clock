@@ -11,7 +11,8 @@ venv/
 .venv/
 
 # PyInstaller
-build/**/localpycs/
+build/
+dist/
 *.manifest
 
 # 图标预览（由 tools/make_icon.py 生成）
