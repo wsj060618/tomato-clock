@@ -52,8 +52,12 @@ pip install -r requirements.txt
 ├── assets/
 │   ├── tomato.png              # 托盘图标（与 exe 同源）
 │   └── tomato.ico              # exe 图标
+├── tools/
+│   └── make_icon.py            # 自绘图标生成脚本
 └── tests/                      # 单元测试
 ```
+
+图标为程序自绘（`python tools/make_icon.py` 可重新生成 `assets/tomato.png` / `assets/tomato.ico`），托盘与 exe 使用同一份。
 
 ### 运行步骤(脚本)
 1. 确保你已经安装了 Python 3.x。

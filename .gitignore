@@ -14,6 +14,9 @@ venv/
 build/**/localpycs/
 *.manifest
 
+# 图标预览（由 tools/make_icon.py 生成）
+tools/preview.png
+
 # IDE / 编辑器
 .idea/
 .vscode/
