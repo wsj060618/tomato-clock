@@ -21,6 +21,30 @@ except ImportError:
     Image = None
     ImageDraw = None
 
+# ----------------------------- DPI 缩放 -----------------------------
+SCALE = 1.0
+
+
+def sp(value):
+    return int(round(value * SCALE))
+
+
+def setup_dpi_awareness():
+    if os.name != "nt":
+        return
+    try:
+        import ctypes
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)
+        except Exception:
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
 # ----------------------------- 路径与配置 -----------------------------
 APP_DIR = os.path.join(os.path.expanduser("~"), ".pomodoro_timer")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
@@ -101,6 +125,7 @@ class RoundedButton(tk.Canvas):
     def __init__(self, parent, text, command=None, width=110, height=44, radius=22,
                  fill="#2A2740", fill_hover="#37314F", fg="#F5F3FF",
                  font=(FONT, 11, "bold"), bg="#1E1B2E"):
+        width, height, radius = sp(width), sp(height), sp(radius)
         super().__init__(parent, width=width, height=height, bg=bg,
                          highlightthickness=0, bd=0, cursor="hand2")
         self.command = command
@@ -132,6 +157,7 @@ class SegmentedControl(tk.Canvas):
     def __init__(self, parent, options, command, width=176, height=36, radius=18,
                  bg="#1E1B2E", accent="#FF6B6B", text_color="#F5F3FF", muted="#8E8AA6",
                  track_color="#2A2740"):
+        width, height, radius = sp(width), sp(height), sp(radius)
         super().__init__(parent, width=width, height=height, bg=bg,
                          highlightthickness=0, bd=0, cursor="hand2")
         self.options = options
@@ -140,7 +166,7 @@ class SegmentedControl(tk.Canvas):
         self.width = width
         self.height = height
         self.radius = radius
-        self.pad = 4
+        self.pad = sp(4)
         self.accent = accent
         self.text_color = text_color
         self.muted = muted
@@ -180,6 +206,7 @@ class Toggle(tk.Canvas):
     def __init__(self, parent, value, command=None, width=44, height=24,
                  bg="#1E1B2E", on_color="#FF6B6B", off_color="#37314F",
                  knob_color="#FFFFFF"):
+        width, height = sp(width), sp(height)
         super().__init__(parent, width=width, height=height, bg=bg,
                          highlightthickness=0, bd=0, cursor="hand2")
         self.value = bool(value)
@@ -213,11 +240,15 @@ class Toggle(tk.Canvas):
 
 
 class PomodoroTimer:
-    W = 320
-    H = 462
+    DESIGN_W = 320
+    DESIGN_H = 462
 
     def __init__(self, root):
+        global SCALE
         self.root = root
+        SCALE = max(1.0, root.winfo_fpixels("1i") / 96.0)
+        self.W = sp(self.DESIGN_W)
+        self.H = sp(self.DESIGN_H)
         self.config = self.load_config()
         self.stats = self.load_stats()
         self.palette = THEMES.get(self.config.get("theme", "dark"), THEMES["dark"])
@@ -252,7 +283,7 @@ class PomodoroTimer:
         self.ball_window = None
         self.ball_canvas = None
         self.ball_ring = None
-        self.ball_radius = 34
+        self.ball_radius = sp(34)
         self.ball_x_offset = 0
         self.ball_y_offset = 0
         self.ball_time_label = None
@@ -349,20 +380,20 @@ class PomodoroTimer:
         self.bg_canvas = tk.Canvas(self.root, width=self.W, height=self.H,
                                    bg=p["magic"], highlightthickness=0)
         self.bg_canvas.place(x=0, y=0)
-        create_round_rect(self.bg_canvas, 0, 0, self.W, self.H, 24,
+        create_round_rect(self.bg_canvas, 0, 0, self.W, self.H, sp(24),
                           fill=p["card"], outline=p["card"])
         self._make_draggable(self.bg_canvas)
 
         # 顶部标题栏
         self.title_label = tk.Label(self.root, text="●  番茄钟", font=(FONT, 11, "bold"),
                                     fg=self.accent, bg=p["card"])
-        self.title_label.place(x=20, y=15)
+        self.title_label.place(x=sp(20), y=sp(15))
         self._make_draggable(self.title_label)
 
         def make_tool(relx_offset, text, command, hover=None):
             lbl = tk.Label(self.root, text=text, font=(FONT, 12), fg=p["muted"],
                            bg=p["card"], cursor="hand2")
-            lbl.place(relx=1.0, x=relx_offset, y=15, anchor="ne")
+            lbl.place(relx=1.0, x=sp(relx_offset), y=sp(15), anchor="ne")
             lbl.bind("<Button-1>", lambda e: command())
             lbl.bind("<Enter>", lambda e: lbl.config(fg=hover or p["text"]))
             lbl.bind("<Leave>", lambda e: lbl.config(fg=p["muted"]))
@@ -378,29 +409,30 @@ class PomodoroTimer:
         self.task_label = tk.Label(self.root, text=task_text, font=(FONT, 10),
                                    fg=p["text"] if self.task_name.strip() else p["muted"],
                                    bg=p["card"], cursor="hand2")
-        self.task_label.place(relx=0.5, y=52, anchor="n")
+        self.task_label.place(relx=0.5, y=sp(52), anchor="n")
         self.task_label.bind("<Button-1>", lambda e: self.edit_task())
 
         # 状态
         self.status_label = tk.Label(self.root, text="工作中", font=(FONT, 10),
                                      fg=p["muted"], bg=p["card"])
-        self.status_label.place(relx=0.5, y=78, anchor="n")
+        self.status_label.place(relx=0.5, y=sp(78), anchor="n")
 
         # 环形进度 + 时间
-        self.ring_canvas = tk.Canvas(self.root, width=200, height=200, bg=p["card"],
+        self.ring_canvas = tk.Canvas(self.root, width=sp(200), height=sp(200), bg=p["card"],
                                      highlightthickness=0)
-        self.ring_canvas.place(relx=0.5, y=102, anchor="n")
-        self.ring_canvas.create_oval(10, 10, 190, 190, outline=p["track"], width=12)
-        self.ring_arc = self.ring_canvas.create_arc(10, 10, 190, 190, start=90,
+        self.ring_canvas.place(relx=0.5, y=sp(102), anchor="n")
+        self.ring_canvas.create_oval(sp(10), sp(10), sp(190), sp(190),
+                                     outline=p["track"], width=sp(12))
+        self.ring_arc = self.ring_canvas.create_arc(sp(10), sp(10), sp(190), sp(190), start=90,
                                                     extent=-359.999, style="arc",
-                                                    outline=self.accent, width=12)
-        self.time_item = self.ring_canvas.create_text(100, 100, text="25:00",
+                                                    outline=self.accent, width=sp(12))
+        self.time_item = self.ring_canvas.create_text(sp(100), sp(100), text="25:00",
                                                       fill=p["text"], font=(FONT, 38, "bold"))
 
         # 统计
         self.stats_label = tk.Label(self.root, text="", font=(FONT, 9),
                                     fg=p["muted"], bg=p["card"])
-        self.stats_label.place(relx=0.5, y=310, anchor="n")
+        self.stats_label.place(relx=0.5, y=sp(310), anchor="n")
 
         # 模式切换
         self.mode_control = SegmentedControl(
@@ -409,14 +441,14 @@ class PomodoroTimer:
             text_color=p["text"], muted=p["muted"])
         if not self.countdown_mode:
             self.mode_control.select(1)
-        self.mode_control.place(relx=0.5, y=336, anchor="n")
+        self.mode_control.place(relx=0.5, y=sp(336), anchor="n")
 
         # 按钮
         self.reset_btn = RoundedButton(self.root, "重置", self.reset_timer,
                                        width=64, height=44, radius=22,
                                        fill=p["card2"], fill_hover=p["card3"], fg=p["text"],
                                        font=(FONT, 10, "bold"), bg=p["card"])
-        self.reset_btn.place(x=18, y=386)
+        self.reset_btn.place(x=sp(18), y=sp(386))
 
         self.start_pause_btn = RoundedButton(self.root, "开始", self.toggle_timer,
                                              width=140, height=44, radius=22,
@@ -424,13 +456,13 @@ class PomodoroTimer:
                                              fill_hover=blend(self.accent, "#FFFFFF", 0.25),
                                              fg="#FFFFFF", font=(FONT, 11, "bold"),
                                              bg=p["card"])
-        self.start_pause_btn.place(relx=0.5, y=386, anchor="n")
+        self.start_pause_btn.place(relx=0.5, y=sp(386), anchor="n")
 
         self.settings_btn = RoundedButton(self.root, "设置", self.show_settings,
                                           width=64, height=44, radius=22,
                                           fill=p["card2"], fill_hover=p["card3"], fg=p["text"],
                                           font=(FONT, 10, "bold"), bg=p["card"])
-        self.settings_btn.place(relx=1.0, x=-18, y=386, anchor="ne")
+        self.settings_btn.place(relx=1.0, x=sp(-18), y=sp(386), anchor="ne")
 
     def _make_draggable(self, widget):
         widget.bind("<Button-1>", self.on_drag_start)
@@ -451,8 +483,8 @@ class PomodoroTimer:
         if isinstance(pos, (list, tuple)) and len(pos) == 2:
             self.root.geometry(f"+{int(pos[0])}+{int(pos[1])}")
         else:
-            x = self.root.winfo_screenwidth() - self.W - 20
-            self.root.geometry(f"+{x}+50")
+            x = self.root.winfo_screenwidth() - self.W - sp(20)
+            self.root.geometry(f"+{x}+{sp(50)}")
 
     # ----------------------------- 主题 -----------------------------
     def toggle_theme(self):
@@ -622,22 +654,22 @@ class PomodoroTimer:
             dlg.wm_attributes("-transparentcolor", p["magic"])
         except tk.TclError:
             pass
-        W, H = 280, 156
+        W, H = sp(280), sp(156)
         x = self.root.winfo_x() + (self.W - W) // 2
-        y = self.root.winfo_y() + 90
+        y = self.root.winfo_y() + sp(90)
         dlg.geometry(f"{W}x{H}+{max(0, x)}+{max(0, y)}")
 
         canvas = tk.Canvas(dlg, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.place(x=0, y=0)
-        create_round_rect(canvas, 0, 0, W, H, 20, fill=p["card"], outline=p["card"])
+        create_round_rect(canvas, 0, 0, W, H, sp(20), fill=p["card"], outline=p["card"])
         tk.Label(dlg, text="当前任务", font=(FONT, 12, "bold"), fg=p["text"],
-                 bg=p["card"]).place(x=24, y=18)
+                 bg=p["card"]).place(x=sp(24), y=sp(18))
 
         entry = tk.Entry(dlg, font=(FONT, 11), bg=p["card2"], fg=p["text"], relief="flat",
                          insertbackground=p["text"], highlightthickness=1,
                          highlightbackground=p["card3"], highlightcolor=self.accent)
         entry.insert(0, self.task_name)
-        entry.place(x=24, y=52, width=W - 48, height=34)
+        entry.place(x=sp(24), y=sp(52), width=W - sp(48), height=sp(34))
         entry.focus_set()
         entry.select_range(0, "end")
 
@@ -654,11 +686,11 @@ class PomodoroTimer:
 
         RoundedButton(dlg, "取消", dlg.destroy, width=90, height=36, radius=18,
                       fill=p["card2"], fill_hover=p["card3"], fg=p["text"],
-                      font=(FONT, 10, "bold"), bg=p["card"]).place(x=24, y=102)
+                      font=(FONT, 10, "bold"), bg=p["card"]).place(x=sp(24), y=sp(102))
         RoundedButton(dlg, "确定", confirm, width=90, height=36, radius=18,
                       fill=self.accent, fill_hover=blend(self.accent, "#FFFFFF", 0.25),
                       fg="#FFFFFF", font=(FONT, 10, "bold"), bg=p["card"]).place(
-            relx=1.0, x=-24, y=102, anchor="ne")
+            relx=1.0, x=sp(-24), y=sp(102), anchor="ne")
 
     # ----------------------------- 设置 -----------------------------
     def show_settings(self):
@@ -671,36 +703,37 @@ class PomodoroTimer:
             win.wm_attributes("-transparentcolor", p["magic"])
         except tk.TclError:
             pass
-        W, H = 340, 400
+        W, H = sp(340), sp(400)
         x = self.root.winfo_x() + (self.W - W) // 2
-        y = self.root.winfo_y() + 40
+        y = self.root.winfo_y() + sp(40)
         win.geometry(f"{W}x{H}+{max(0, x)}+{max(0, y)}")
 
         canvas = tk.Canvas(win, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.place(x=0, y=0)
-        create_round_rect(canvas, 0, 0, W, H, 20, fill=p["card"], outline=p["card"])
+        create_round_rect(canvas, 0, 0, W, H, sp(20), fill=p["card"], outline=p["card"])
 
         tk.Label(win, text="设置", font=(FONT, 13, "bold"), fg=p["text"],
-                 bg=p["card"]).place(x=24, y=18)
+                 bg=p["card"]).place(x=sp(24), y=sp(18))
 
         def close():
             win.destroy()
 
         close_btn = tk.Label(win, text="✕", font=(FONT, 12), fg=p["muted"], bg=p["card"],
                              cursor="hand2")
-        close_btn.place(relx=1.0, x=-20, y=18, anchor="ne")
+        close_btn.place(relx=1.0, x=sp(-20), y=sp(18), anchor="ne")
         close_btn.bind("<Button-1>", lambda e: close())
         close_btn.bind("<Enter>", lambda e: close_btn.config(fg=p["work"]))
         close_btn.bind("<Leave>", lambda e: close_btn.config(fg=p["muted"]))
 
         def add_field(label, value, x, y, width=140):
+            x, y, width = sp(x), sp(y), sp(width)
             tk.Label(win, text=label, font=(FONT, 9), fg=p["muted"], bg=p["card"]).place(x=x, y=y)
             entry = tk.Entry(win, font=(FONT, 11), bg=p["card2"], fg=p["text"], relief="flat",
                              insertbackground=p["text"], justify="center",
                              highlightthickness=1, highlightbackground=p["card3"],
                              highlightcolor=self.accent)
             entry.insert(0, str(value))
-            entry.place(x=x, y=y + 20, width=width, height=32)
+            entry.place(x=x, y=y + sp(20), width=width, height=sp(32))
             return entry
 
         work_entry = add_field("工作时长（分钟）", self.work_duration // 60, 24, 56)
@@ -709,13 +742,13 @@ class PomodoroTimer:
         cycle_entry = add_field("长休息间隔（个）", self.cycles_before_long_break, 176, 126)
 
         # 主题
-        tk.Label(win, text="主题", font=(FONT, 9), fg=p["muted"], bg=p["card"]).place(x=24, y=196)
+        tk.Label(win, text="主题", font=(FONT, 9), fg=p["muted"], bg=p["card"]).place(x=sp(24), y=sp(196))
         theme_control = SegmentedControl(win, ["深色", "浅色"], lambda i: None,
                                          width=100, height=30, radius=15, bg=p["card"],
                                          track_color=p["card2"], accent=self.accent,
                                          text_color=p["text"], muted=p["muted"])
         theme_control.select(THEME_ORDER.index(self.theme_name))
-        theme_control.place(x=176, y=192)
+        theme_control.place(x=sp(176), y=sp(192))
 
         # 开关
         auto_toggle = Toggle(win, self.auto_start, bg=p["card"], on_color=self.accent,
@@ -731,8 +764,8 @@ class PomodoroTimer:
                 ("系统托盘", tray_toggle, 308)]
         for label, toggle, y in rows:
             tk.Label(win, text=label, font=(FONT, 10), fg=p["text"],
-                     bg=p["card"]).place(x=24, y=y)
-            toggle.place(relx=1.0, x=-24, y=y - 4, anchor="ne")
+                     bg=p["card"]).place(x=sp(24), y=sp(y))
+            toggle.place(relx=1.0, x=sp(-24), y=sp(y - 4), anchor="ne")
 
         def save_settings():
             try:
@@ -771,7 +804,7 @@ class PomodoroTimer:
         RoundedButton(win, "保存", save_settings, width=120, height=40, radius=20,
                       fill=self.accent, fill_hover=blend(self.accent, "#FFFFFF", 0.25),
                       fg="#FFFFFF", font=(FONT, 11, "bold"), bg=p["card"]).place(
-            relx=0.5, y=344, anchor="n")
+            relx=0.5, y=sp(344), anchor="n")
 
         drag = {"x": 0, "y": 0}
 
@@ -816,18 +849,19 @@ class PomodoroTimer:
             t.wm_attributes("-transparentcolor", p["magic"])
         except tk.TclError:
             pass
-        W, H = 260, 84
-        x = t.winfo_screenwidth() - W - 20
-        y = t.winfo_screenheight() - H - 60
+        W, H = sp(260), sp(84)
+        x = t.winfo_screenwidth() - W - sp(20)
+        y = t.winfo_screenheight() - H - sp(60)
         t.geometry(f"{W}x{H}+{x}+{y}")
 
         canvas = tk.Canvas(t, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.pack()
-        create_round_rect(canvas, 0, 0, W, H, 16, fill=p["card"], outline=p["card"])
-        canvas.create_rectangle(0, 0, 5, H, fill=self.accent, outline=self.accent)
-        canvas.create_text(20, 26, text=title, anchor="w", fill=self.accent,
+        create_round_rect(canvas, 0, 0, W, H, sp(16), fill=p["card"], outline=p["card"])
+        canvas.create_rectangle(0, 0, sp(5), H, fill=self.accent, outline=self.accent)
+        canvas.create_text(sp(20), sp(26), text=title, anchor="w", fill=self.accent,
                            font=(FONT, 11, "bold"))
-        canvas.create_text(20, 52, text=message, anchor="w", fill=p["text"], font=(FONT, 9))
+        canvas.create_text(sp(20), sp(52), text=message, anchor="w", fill=p["text"],
+                           font=(FONT, 9))
 
         def dismiss(_=None):
             try:
@@ -878,15 +912,16 @@ class PomodoroTimer:
         except tk.TclError:
             pass
 
-        x = ball.winfo_screenwidth() - d - 10
-        y = 10
+        x = ball.winfo_screenwidth() - d - sp(10)
+        y = sp(10)
         ball.geometry(f"{d}x{d}+{x}+{y}")
 
         self.ball_canvas = tk.Canvas(ball, width=d, height=d, bg=p["magic"],
                                      highlightthickness=0)
         self.ball_canvas.pack()
-        self.ball_ring = self.ball_canvas.create_oval(4, 4, d - 4, d - 4,
-                                                      outline=self.accent, width=4, fill=p["card"])
+        self.ball_ring = self.ball_canvas.create_oval(sp(4), sp(4), d - sp(4), d - sp(4),
+                                                      outline=self.accent, width=sp(4),
+                                                      fill=p["card"])
         self.ball_time_label = tk.Label(ball, font=(FONT, 11, "bold"), fg=p["text"], bg=p["card"])
         self.ball_time_label.place(relx=0.5, rely=0.5, anchor="center")
         self.update_ball_display()
@@ -972,6 +1007,7 @@ class PomodoroTimer:
 
 
 if __name__ == "__main__":
+    setup_dpi_awareness()
     root = tk.Tk()
     app = PomodoroTimer(root)
     root.mainloop()
