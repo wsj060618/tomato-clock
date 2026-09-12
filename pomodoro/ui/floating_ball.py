@@ -3,7 +3,7 @@
 import tkinter as tk
 
 from ..constants import FONT
-from ..theme import sp
+from ..theme import sp, blend
 from ..widgets import paint_ball
 
 
@@ -32,16 +32,13 @@ class FloatingBall:
         self.window = ball
         ball.overrideredirect(True)
         ball.wm_attributes("-topmost", 1)
-        ball.configure(bg=p["magic"])
-        try:
-            ball.wm_attributes("-transparentcolor", p["magic"])
-        except tk.TclError:
-            pass
+        ball.configure(bg=app.accent)
+        self._set_transparent(app.accent)
 
         x = ball.winfo_screenwidth() - d - sp(10)
         ball.geometry(f"{d}x{d}+{x}+{sp(10)}")
 
-        self.canvas = tk.Canvas(ball, width=d, height=d, bg=p["magic"], highlightthickness=0)
+        self.canvas = tk.Canvas(ball, width=d, height=d, bg=app.accent, highlightthickness=0)
         self.canvas.pack()
         self.time_label = tk.Label(ball, font=(FONT, 11, "bold"), fg=p["text"], bg=p["card"])
         self.time_label.place(relx=0.5, rely=0.5, anchor="center")
@@ -62,11 +59,29 @@ class FloatingBall:
         self.canvas = None
         self.time_label = None
 
+    def _set_transparent(self, color):
+        if self.window is None:
+            return
+        try:
+            self.window.wm_attributes("-transparentcolor", color)
+        except tk.TclError:
+            pass
+
     def _paint(self):
-        p = self.app.palette
-        paint_ball(self.canvas, self.radius * 2, p["card"], self.app.accent,
-                   sp(4), p["magic"])
-        self._accent = self.app.accent
+        if self.canvas is None:
+            return
+        app = self.app
+        p = app.palette
+        # 用当前强调色作为透明键，圆环用几乎同色的近色，
+        # 使抗锯齿边缘过渡到自身颜色，避免黑/白毛边与锯齿。
+        magic = app.accent
+        ring = blend(app.accent, "#FFFFFF", 0.05)
+        paint_ball(self.canvas, self.radius * 2, p["card"], ring, sp(4), magic)
+        self.canvas.configure(bg=magic)
+        if self.window is not None:
+            self.window.configure(bg=magic)
+        self._set_transparent(magic)
+        self._accent = app.accent
 
     def update(self, current=None):
         if current is None:
@@ -81,11 +96,10 @@ class FloatingBall:
     def restyle(self):
         if self.canvas is None:
             return
-        p = self.app.palette
-        self.canvas.configure(bg=p["magic"])
         self._paint()
         if self.time_label is not None:
-            self.time_label.configure(bg=p["card"], fg=p["text"])
+            self.time_label.configure(bg=self.app.palette["card"],
+                                      fg=self.app.palette["text"])
 
     def _on_drag_start(self, event):
         self._x_offset = event.x
