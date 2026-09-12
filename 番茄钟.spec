@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, SPECPATH)
 from pomodoro import __version__  # noqa: E402
 
-APP_NAME = f"番茄钟-v{__version__}"
+APP_NAME = f"TomatoClock-v{__version__}"
 
 a = Analysis(
     ['main.py'],

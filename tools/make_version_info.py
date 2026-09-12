@@ -29,11 +29,11 @@ TEMPLATE = """VSVersionInfo(
       [
       StringTable(
         '080404b0',
-        [StringStruct('FileDescription', '番茄钟'),
+        [StringStruct('FileDescription', 'Tomato Clock'),
         StringStruct('FileVersion', '{ver}'),
-        StringStruct('InternalName', '番茄钟'),
-        StringStruct('OriginalFilename', '番茄钟-v{ver}.exe'),
-        StringStruct('ProductName', '番茄钟'),
+        StringStruct('InternalName', 'TomatoClock'),
+        StringStruct('OriginalFilename', 'TomatoClock-v{ver}.exe'),
+        StringStruct('ProductName', 'Tomato Clock'),
         StringStruct('ProductVersion', '{ver}')])
       ]),
     VarFileInfo([VarStruct('Translation', [2052, 1200])])

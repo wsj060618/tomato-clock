@@ -14,11 +14,11 @@ VSVersionInfo(
       [
       StringTable(
         '080404b0',
-        [StringStruct('FileDescription', '番茄钟'),
+        [StringStruct('FileDescription', 'Tomato Clock'),
         StringStruct('FileVersion', '2.1.0'),
-        StringStruct('InternalName', '番茄钟'),
-        StringStruct('OriginalFilename', '番茄钟-v2.1.0.exe'),
-        StringStruct('ProductName', '番茄钟'),
+        StringStruct('InternalName', 'TomatoClock'),
+        StringStruct('OriginalFilename', 'TomatoClock-v2.1.0.exe'),
+        StringStruct('ProductName', 'Tomato Clock'),
         StringStruct('ProductVersion', '2.1.0')])
       ]),
     VarFileInfo([VarStruct('Translation', [2052, 1200])])
