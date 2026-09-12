@@ -354,13 +354,16 @@ class PomodoroApp:
         self.config["tray"] = self.tray_on
         storage.save_config(self.config)
 
+    def save_stats(self):
+        storage.save_stats(self.stats)
+
     def quit_app(self):
         try:
             self.config["window_pos"] = [self.root.winfo_x(), self.root.winfo_y()]
         except tk.TclError:
             pass
         self.save_config()
-        storage.save_stats(self.stats)
+        self.save_stats()
         self.tray.stop()
         try:
             self.root.destroy()
