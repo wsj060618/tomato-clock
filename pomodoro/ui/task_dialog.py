@@ -4,7 +4,7 @@ import tkinter as tk
 
 from ..constants import FONT
 from ..theme import sp, blend
-from ..widgets import RoundedButton, create_round_rect, enable_drag
+from ..widgets import RoundedButton, paint_card, enable_drag
 
 
 class TaskDialog:
@@ -30,7 +30,7 @@ class TaskDialog:
 
         canvas = tk.Canvas(dlg, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.place(x=0, y=0)
-        create_round_rect(canvas, 0, 0, W, H, sp(20), fill=p["card"], outline=p["card"])
+        paint_card(canvas, W, H, sp(20), p["card"], p["magic"])
         tk.Label(dlg, text="当前任务", font=(FONT, 12, "bold"), fg=p["text"],
                  bg=p["card"]).place(x=sp(24), y=sp(18))
 

@@ -7,7 +7,7 @@ from ..constants import DESIGN_H, DESIGN_W, FONT, THEMES, THEME_ORDER
 from ..theme import blend, set_scale, sp
 from ..timer import TimerCore
 from ..tray import TrayController
-from ..widgets import RoundedButton, SegmentedControl, create_round_rect
+from ..widgets import RoundedButton, SegmentedControl, paint_card
 from .floating_ball import FloatingBall
 from .history_dialog import HistoryDialog
 from .settings_dialog import SettingsDialog
@@ -89,8 +89,7 @@ class PomodoroApp:
         self.bg_canvas = tk.Canvas(self.root, width=self.W, height=self.H,
                                    bg=p["magic"], highlightthickness=0)
         self.bg_canvas.place(x=0, y=0)
-        create_round_rect(self.bg_canvas, 0, 0, self.W, self.H, sp(24),
-                          fill=p["card"], outline=p["card"])
+        paint_card(self.bg_canvas, self.W, self.H, sp(24), p["card"], p["magic"])
         self._make_draggable(self.bg_canvas)
 
         # 顶部标题栏

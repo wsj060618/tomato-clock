@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 from ..constants import FONT
 from ..theme import sp
-from ..widgets import create_round_rect, enable_drag
+from ..widgets import paint_card, enable_drag
 
 
 def _format_day(key):
@@ -49,7 +49,7 @@ class HistoryDialog:
 
         canvas = tk.Canvas(win, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.place(x=0, y=0)
-        create_round_rect(canvas, 0, 0, W, H, sp(20), fill=p["card"], outline=p["card"])
+        paint_card(canvas, W, H, sp(20), p["card"], p["magic"])
 
         tk.Label(win, text="历史记录", font=(FONT, 13, "bold"), fg=p["text"],
                  bg=p["card"]).place(x=sp(24), y=sp(16))

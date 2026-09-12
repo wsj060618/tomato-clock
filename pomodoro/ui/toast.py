@@ -4,7 +4,7 @@ import tkinter as tk
 
 from ..constants import FONT
 from ..theme import sp
-from ..widgets import create_round_rect
+from ..widgets import paint_card
 
 
 class ToastManager:
@@ -35,7 +35,7 @@ class ToastManager:
 
         canvas = tk.Canvas(t, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.pack()
-        create_round_rect(canvas, 0, 0, W, H, sp(16), fill=p["card"], outline=p["card"])
+        paint_card(canvas, W, H, sp(16), p["card"], p["magic"])
         canvas.create_rectangle(0, 0, sp(5), H, fill=accent, outline=accent)
         canvas.create_text(sp(20), sp(26), text=title, anchor="w", fill=accent,
                            font=(FONT, 11, "bold"))

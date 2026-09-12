@@ -1,2 +1,2 @@
 pystray>=0.19
-Pillow>=9.0
+Pillow>=9.1

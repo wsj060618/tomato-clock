@@ -5,7 +5,7 @@ from tkinter import messagebox
 
 from ..constants import FONT, THEME_ORDER
 from ..theme import sp, blend
-from ..widgets import RoundedButton, SegmentedControl, Toggle, create_round_rect, enable_drag
+from ..widgets import RoundedButton, SegmentedControl, Toggle, paint_card, enable_drag
 
 
 class SettingsDialog:
@@ -32,7 +32,7 @@ class SettingsDialog:
 
         canvas = tk.Canvas(win, width=W, height=H, bg=p["magic"], highlightthickness=0)
         canvas.place(x=0, y=0)
-        create_round_rect(canvas, 0, 0, W, H, sp(20), fill=p["card"], outline=p["card"])
+        paint_card(canvas, W, H, sp(20), p["card"], p["magic"])
 
         tk.Label(win, text="设置", font=(FONT, 13, "bold"), fg=p["text"],
                  bg=p["card"]).place(x=sp(24), y=sp(18))

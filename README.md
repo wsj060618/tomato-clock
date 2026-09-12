@@ -40,7 +40,8 @@ pip install -r requirements.txt
 │   ├── timer.py                # 计时状态机（纯逻辑，可测试）
 │   ├── sound.py                # 提示音
 │   ├── tray.py                 # 系统托盘
-│   ├── widgets.py              # 自绘控件
+│   ├── resources.py            # 资源路径（兼容打包）
+│   ├── widgets.py              # 自绘控件（Pillow 抗锯齿）
 │   └── ui/                     # 界面层
 │       ├── app.py              # 主窗口
 │       ├── settings_dialog.py  # 设置窗
@@ -48,6 +49,9 @@ pip install -r requirements.txt
 │       ├── history_dialog.py   # 历史记录
 │       ├── toast.py            # 浮层通知
 │       └── floating_ball.py    # 悬浮球
+├── assets/
+│   ├── tomato.png              # 托盘图标（与 exe 同源）
+│   └── tomato.ico              # exe 图标
 └── tests/                      # 单元测试
 ```
 
@@ -68,6 +72,15 @@ python main.py
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+### 打包为 exe
+```bash
+pip install pyinstaller
+pyinstaller 番茄钟.spec
+```
+生成物在 `dist/番茄钟.exe`。图标与托盘图标同源：
+- exe 图标：`assets/tomato.ico`
+- 托盘图标：`assets/tomato.png`（打包时通过 `datas` 一并带入）
 
 ### 运行步骤(可执行文件)
 1. 下载可执行文件

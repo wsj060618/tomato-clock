@@ -1,6 +1,9 @@
 """系统托盘封装（依赖 pystray + Pillow，缺失时自动不可用）。"""
 
+import os
 import threading
+
+from .resources import resource_path
 
 try:
     import pystray
@@ -12,6 +15,10 @@ try:
 except ImportError:
     Image = None
     ImageDraw = None
+
+
+# 与 exe 图标使用同一份资源
+ICON_PNG = resource_path("assets", "tomato.png")
 
 
 def is_available():
@@ -31,7 +38,14 @@ class TrayController:
         return self.icon is not None
 
     def _image(self):
+        """托盘图标：优先加载与 exe 相同的 assets/tomato.png，缺失时运行时绘制。"""
         size = 64
+        if Image is not None and os.path.exists(ICON_PNG):
+            try:
+                return Image.open(ICON_PNG).convert("RGBA").resize((size, size),
+                                                                   Image.LANCZOS)
+            except Exception:
+                pass
         img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         palette = self.app.palette
