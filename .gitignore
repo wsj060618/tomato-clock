@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# 虚拟环境
+venv/
+.venv/
+
+# PyInstaller
+build/**/localpycs/
+*.manifest
+
+# IDE / 编辑器
+.idea/
+.vscode/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
