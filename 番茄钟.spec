@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['番茄钟.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
     datas=[],

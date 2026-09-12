@@ -24,20 +24,49 @@
 - pystray、Pillow（用于系统托盘；未安装时其余功能仍可正常使用）
 
 ```bash
-pip install pystray Pillow
+pip install -r requirements.txt
+```
+
+### 项目结构
+```
+番茄钟/
+├── main.py                     # 程序入口
+├── 番茄钟.py                    # 兼容入口（等价于 main.py）
+├── pomodoro/
+│   ├── constants.py            # 常量、默认配置、主题配色
+│   ├── theme.py                # 主题、颜色工具与 DPI 缩放
+│   ├── storage.py              # 配置 / 统计持久化
+│   ├── timer.py                # 计时状态机（纯逻辑，可测试）
+│   ├── sound.py                # 提示音
+│   ├── tray.py                 # 系统托盘
+│   ├── widgets.py              # 自绘控件
+│   └── ui/                     # 界面层
+│       ├── app.py              # 主窗口
+│       ├── settings_dialog.py  # 设置窗
+│       ├── task_dialog.py      # 任务窗
+│       ├── toast.py            # 浮层通知
+│       └── floating_ball.py    # 悬浮球
+└── tests/                      # 单元测试
 ```
 
 ### 运行步骤(脚本)
-1. 确保你已经安装了Python 3.x。
+1. 确保你已经安装了 Python 3.x。
 2. 下载或克隆本项目到本地。
 3. 打开命令行终端，导航到项目目录：
 ```bash
 cd D:\coding\番茄钟
 ```
-4. 运行Python脚本：
+4. 运行：
 ```bash
-python 番茄钟.py
+python main.py
 ```
+（`python 番茄钟.py` 亦可，二者等价）
+
+### 运行测试
+```bash
+python -m unittest discover -s tests -v
+```
+
 ### 运行步骤(可执行文件)
 1. 下载可执行文件
 2. 双击运行exe文件
