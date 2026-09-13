@@ -23,6 +23,8 @@ class FloatingBall:
         self._y_offset = 0
         self._accent = None
         self._text = "25:00"
+        self._progress = None
+        self._current = None
         self._layered = False
 
     @property
@@ -91,8 +93,11 @@ class FloatingBall:
         p = app.palette
         d = self.radius * 2
         if self._layered:
+            current = self._current if self._current is not None else app.core.display_value()
+            self._progress = app.core.progress(current)
             img = ball_image(d, p["card"], app.accent, sp(4), self._text,
-                             p["text"], int(round(sp(14))))
+                             p["text"], int(round(sp(14))),
+                             progress=self._progress, track=p["track"])
             layered.set_image(layered._hwnd_of(self.window), img,
                               self.window.winfo_x(), self.window.winfo_y())
         else:
@@ -109,10 +114,13 @@ class FloatingBall:
     def update(self, current=None):
         if current is None:
             current = self.app.core.display_value()
-        text = f"{int(current // 60):02d}:{int(current % 60):02d}"
         if self.window is None:
             return
-        if text != self._text or self.app.accent != self._accent:
+        text = f"{int(current // 60):02d}:{int(current % 60):02d}"
+        progress = self.app.core.progress(current)
+        if (text != self._text or self.app.accent != self._accent
+                or self._progress is None or abs(progress - self._progress) > 0.003):
+            self._current = current
             self._text = text
             self._render()
 

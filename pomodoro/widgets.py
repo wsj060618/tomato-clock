@@ -31,15 +31,29 @@ def _load_font(size):
     return ImageFont.load_default()
 
 
-def ball_image(diameter, fill, outline, ring, text, text_color, font_size):
-    """生成带真实 alpha 的悬浮球 RGBA 图片（供逐像素透明贴图）。"""
+def ball_image(diameter, fill, outline, ring, text, text_color, font_size,
+               progress=1.0, track=None):
+    """生成带真实 alpha 的悬浮球 RGBA 图片（供逐像素透明贴图）。
+
+    progress 为 0~1 的环形进度：从 12 点方向顺时针填充。
+    """
     s = 4
     size = diameter * s
     rw = max(1, int(ring * s))
     inset = rw // 2
+    box = [inset, inset, size - 1 - inset, size - 1 - inset]
     shape = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    ImageDraw.Draw(shape).ellipse([inset, inset, size - 1 - inset, size - 1 - inset],
-                                  fill=fill, outline=outline, width=rw)
+    draw = ImageDraw.Draw(shape)
+    draw.ellipse(box, fill=fill)
+    if track:
+        draw.ellipse(box, outline=track, width=rw)
+
+    frac = max(0.0, min(1.0, progress))
+    if frac >= 0.999:
+        draw.ellipse(box, outline=outline, width=rw)
+    elif frac > 0.001:
+        draw.arc(box, start=-90, end=-90 + 360 * frac, fill=outline, width=rw)
+
     shape = shape.resize((diameter, diameter), Image.LANCZOS)
     draw = ImageDraw.Draw(shape)
     font = _load_font(font_size)
