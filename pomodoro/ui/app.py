@@ -1,5 +1,6 @@
 """主窗口：组装界面、计时状态机、托盘与各类弹窗。"""
 
+import time
 import tkinter as tk
 
 from .. import sound, storage
@@ -23,6 +24,7 @@ class PomodoroApp:
         self.H = sp(DESIGN_H)
 
         self.config = storage.load_config()
+        self.animations = bool(self.config.get("animations", True))
         self.stats = storage.load_stats()
         self.core = TimerCore(self.config, self.stats)
 
@@ -38,6 +40,8 @@ class PomodoroApp:
 
         self._offset_x = 0
         self._offset_y = 0
+        self._intro_done = False
+        self._intro_start = 0.0
 
         self.toast = ToastManager(self)
         self.ball = FloatingBall(self)
@@ -50,6 +54,7 @@ class PomodoroApp:
         self._bind_shortcuts()
         if self.tray_on:
             self.tray.start()
+        self._start_intro()
         self.root.after(30000, self._check_day_rollover)
 
     # ----------------------------- 根窗口 -----------------------------
@@ -62,6 +67,11 @@ class PomodoroApp:
             self.root.wm_attributes("-transparentcolor", self.palette["magic"])
         except tk.TclError:
             pass
+        if self.animations:
+            try:
+                self.root.attributes("-alpha", 0.0)
+            except tk.TclError:
+                pass
 
     def _bind_shortcuts(self):
         self.root.bind_all("<space>", lambda e: self._hotkey(self.toggle_timer))
@@ -82,6 +92,48 @@ class PomodoroApp:
             return None
         action()
         return "break"
+
+    # ----------------------------- 启动动画 -----------------------------
+    def _start_intro(self):
+        """启动时的淡入 + 环形进度扫过；关闭动画或不可用时直接结束。"""
+        if not self.animations or not hasattr(self, "ring_arc"):
+            self._intro_done = True
+            return
+        self._intro_value = max(0.0, self.core.display_value())
+        self._intro_start = time.perf_counter()
+        self._apply_intro(0.0, 0.0)
+        self.root.after(16, self._intro_tick)
+
+    def _intro_tick(self):
+        if self._intro_done:
+            return
+        elapsed = time.perf_counter() - self._intro_start
+        fade = min(1.0, elapsed / 0.35)
+        sweep = min(1.0, elapsed / 0.45)
+        self._apply_intro(fade, sweep)
+        if fade >= 1.0 and sweep >= 1.0:
+            self._finish_intro()
+        else:
+            self.root.after(16, self._intro_tick)
+
+    def _apply_intro(self, fade, sweep):
+        try:
+            self.root.attributes("-alpha", 1 - (1 - fade) ** 3)
+        except tk.TclError:
+            pass
+        fraction = self.core.progress(self._intro_value) * (1 - (1 - sweep) ** 3)
+        self.ring_canvas.itemconfig(
+            self.ring_arc, extent=-359.999 * fraction if fraction > 0 else 0)
+
+    def _finish_intro(self):
+        if self._intro_done:
+            return
+        self._intro_done = True
+        try:
+            self.root.attributes("-alpha", 1.0)
+        except tk.TclError:
+            pass
+        self.render()
 
     # ----------------------------- 主界面 -----------------------------
     def build_ui(self):
@@ -205,6 +257,7 @@ class PomodoroApp:
     def set_theme(self, name):
         if name not in THEMES:
             return
+        self._finish_intro()
         self.theme_name = name
         self.palette = THEMES[name]
         self.config["theme"] = name
@@ -236,6 +289,7 @@ class PomodoroApp:
         self.reset_timer()
 
     def toggle_timer(self):
+        self._finish_intro()
         self.core.toggle()
         self.start_pause_btn.set_text("暂停" if self.core.is_running else "继续")
         if self.core.is_running:
@@ -283,6 +337,7 @@ class PomodoroApp:
         self.status_label.config(text=self.core.phase_text(), fg=self.accent)
 
     def reset_timer(self):
+        self._finish_intro()
         self.core.reset()
         self.start_pause_btn.set_text("开始")
         self.render()
@@ -352,6 +407,7 @@ class PomodoroApp:
         self.config["theme"] = self.theme_name
         self.config["sound"] = self.sound_on
         self.config["tray"] = self.tray_on
+        self.config["animations"] = self.animations
         storage.save_config(self.config)
 
     def save_stats(self):

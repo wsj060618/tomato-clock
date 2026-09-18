@@ -26,7 +26,7 @@ class SettingsDialog:
         except tk.TclError:
             pass
 
-        W, H = sp(340), sp(400)
+        W, H = sp(340), sp(436)
         x = app.root.winfo_x() + (app.W - W) // 2
         y = app.root.winfo_y() + sp(40)
         win.geometry(f"{W}x{H}+{max(0, x)}+{max(0, y)}")
@@ -79,11 +79,13 @@ class SettingsDialog:
                               off_color=p["card3"])
         tray_toggle = Toggle(win, app.tray_on, bg=p["card"], on_color=app.accent,
                              off_color=p["card3"])
+        anim_toggle = Toggle(win, app.animations, bg=p["card"], on_color=app.accent,
+                             off_color=p["card3"])
         if not app.tray.available:
             tray_toggle.bind("<Button-1>", lambda e: None)
 
         rows = [("自动开始下一阶段", auto_toggle, 236), ("提示音", sound_toggle, 272),
-                ("系统托盘", tray_toggle, 308)]
+                ("系统托盘", tray_toggle, 308), ("启动动画", anim_toggle, 344)]
         for label, toggle, y in rows:
             tk.Label(win, text=label, font=(FONT, 10), fg=p["text"],
                      bg=p["card"]).place(x=sp(24), y=sp(y))
@@ -103,6 +105,7 @@ class SettingsDialog:
 
             core.apply_settings(work, btime, ltime, cycles, auto_toggle.value)
             app.sound_on = sound_toggle.value
+            app.animations = anim_toggle.value
             new_theme = THEME_ORDER[theme_control.current]
             tray_requested = tray_toggle.value and app.tray.available
 
@@ -126,10 +129,10 @@ class SettingsDialog:
         RoundedButton(win, "保存", save_settings, width=120, height=40, radius=20,
                       fill=app.accent, fill_hover=blend(app.accent, "#FFFFFF", 0.25),
                       fg="#FFFFFF", font=(FONT, 11, "bold"), bg=p["card"]).place(
-            relx=0.5, y=sp(344), anchor="n")
+            relx=0.5, y=sp(380), anchor="n")
 
         tk.Label(win, text=f"v{__version__}", font=(FONT, 8), fg=p["muted"],
-                 bg=p["card"]).place(x=sp(24), y=sp(378))
+                 bg=p["card"]).place(x=sp(24), y=sp(414))
 
         # 窗口拖动
         enable_drag(win, canvas, win)

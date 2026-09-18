@@ -1,38 +1,116 @@
-# 番茄钟
+# 番茄钟 · Tomato Clock
 
-当前版本：**2.2.0**（版本历史见 [CHANGELOG.md](CHANGELOG.md)）
+[![Release](https://img.shields.io/github/v/release/wsj060618/tomato-clock?style=flat-square&label=release&color=FF6B6B)](https://github.com/wsj060618/tomato-clock/releases)
+[![License](https://img.shields.io/github/license/wsj060618/tomato-clock?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?style=flat-square)](https://github.com/wsj060618/tomato-clock/releases)
+[![Python](https://img.shields.io/badge/python-3.8%2B-3776AB?style=flat-square)](https://www.python.org/)
+
+> 基于 Python + Tkinter 的轻量番茄钟：倒计时 / 正计时、系统托盘、桌面悬浮球、深浅主题与本地统计。
 
 ## 简介
-本项目是一个基于Python的番茄钟计时器应用，使用Tkinter库构建图形用户界面。番茄钟工作法是一种时间管理方法，将工作时间划分为25分钟的工作时段和5分钟的休息时段。该应用支持倒计时和正计时两种模式，还具备小球悬浮窗功能。
 
-## 功能特性
-- **现代化界面**：圆角卡片、环形进度动画、分段式模式切换，支持深色/浅色主题。
-- **计时模式切换**：支持倒计时和正计时两种模式。
-- **自定义设置**：可以自定义工作时长、休息时长、长休息时长与长休息间隔。
-- **自动循环 + 长休息**：每完成设定数量的番茄自动进入长休息；可选择结束后自动开始下一阶段。
-- **番茄统计**：界面显示今日完成番茄数与专注时长，数据本地持久化。
-- **历史记录**：点统计行或按 `H` 查看按天汇总的完成数与专注时长，含任务明细；可单条删除或一键清空。
-- **任务标签**：为当前番茄命名，完成后按任务计入统计。
-- **提示音与轻提示**：阶段结束时播放提示音并弹出轻量浮层通知。
-- **设置持久化**：工作时长、主题、窗口位置等配置自动保存，重启恢复。
-- **键盘快捷键**：空格开始/暂停、R 重置、S 设置、Esc 收起为小球。
-- **悬浮窗功能**：支持最小化到小球悬浮窗，方便在桌面任何位置查看时间。
-- **系统托盘**：支持最小化到系统托盘（需 pystray）。
-- **窗口拖动**：主窗口、设置、任务、历史与悬浮球均支持拖动。
+番茄钟是一个面向 Windows 的番茄工作法计时器。程序完全本地运行，不联网、不收集数据；配置与统计保存在用户目录下。界面使用 Tkinter 构建，圆角与图标由 Pillow 自绘，系统托盘由 pystray 提供。
 
-## 安装与运行
+## 特性
+
+**计时**
+- 倒计时 / 正计时两种模式，可随时切换
+- 自定义工作时长、短休息、长休息时长与长休息间隔
+- 自动循环 + 长休息，可选阶段结束后自动开始下一阶段
+
+**界面**
+- 无边框圆角卡片与环形进度
+- 启动时窗口淡入、进度环扫过（可在设置中关闭）
+- 深色 / 浅色主题一键切换
+- 桌面悬浮球，最小化后可在任意位置查看剩余时间
+
+**统计**
+- 今日完成番茄数与专注时长
+- 按天汇总的历史记录，含任务明细，支持单条删除与一键清空
+- 任务标签，按任务归类统计，跨天自动重置
+
+**系统集成**
+- 系统托盘菜单（需 pystray）
+- 阶段结束提示音与浮层通知
+- 设置、窗口位置、任务等自动持久化
+
+## 下载
+
+前往 [Releases](https://github.com/wsj060618/tomato-clock/releases/latest) 下载最新版本：
+
+| 类型 | 文件 | 说明 |
+| --- | --- | --- |
+| 安装版 | `TomatoClock-Setup-v<版本>.exe` | 双击安装，默认安装到 `%LOCALAPPDATA%\Programs\TomatoClock`，创建「番茄钟」开始菜单与桌面快捷方式，可从「应用和功能」卸载 |
+| 便携版 | `TomatoClock-Portable-v<版本>.zip` | 解压后运行文件夹内的 `TomatoClock-v<版本>.exe`，无需安装 |
+
+系统要求：Windows 10 / 11（64 位）。
+
+> 程序未进行代码签名，首次运行时 Windows SmartScreen 可能提示“已保护你的电脑”。选择“更多信息 → 仍要运行”即可，之后不再提示。
+
+## 快速开始
+
 ### 环境要求
-- Python 3.x
-- Tkinter（Python标准库，通常无需额外安装）
-- pystray、Pillow（用于系统托盘；未安装时其余功能仍可正常使用）
+- Python 3.8+
+- Tkinter（Python 标准库自带）
+- pystray、Pillow（系统托盘与自绘控件；未安装时应用可降级运行）
+
+### 从源码运行
 
 ```bash
+git clone https://github.com/wsj060618/tomato-clock.git
+cd tomato-clock
 pip install -r requirements.txt
+python main.py
 ```
 
-### 项目结构
+### 运行测试
+
+```bash
+python -m unittest discover -s tests -v
 ```
-番茄钟/
+
+## 使用说明
+
+### 主界面
+- **开始 / 暂停**：点击“开始”启动计时，运行中可暂停或继续
+- **重置**：将计时器恢复到初始状态
+- **任务**：点击顶部任务文字编辑当前任务名称
+- **历史记录**：点击统计行（“今日 … ›”）查看按天汇总，含完成数、专注时长与任务明细；每行“✕”删除该天，右上“清空”删除全部
+- **模式切换**：点击“倒计时 / 正计时”切换计时模式
+- **主题 / 提示音**：点击标题栏的“◐”“♪”切换
+- **最小化 / 关闭**：点击“—”收起为悬浮球，点击“×”退出
+
+### 键盘快捷键
+| 按键 | 功能 |
+| --- | --- |
+| `空格` | 开始 / 暂停 |
+| `R` | 重置 |
+| `S` | 打开设置 |
+| `H` | 查看历史记录 |
+| `Esc` | 收起为悬浮球 |
+
+### 悬浮球
+- 拖动可移动位置，双击恢复主窗口
+
+### 系统托盘
+- 右键托盘图标可显示主界面、收起为小球或退出
+
+## 配置
+
+在设置窗口可调整工作时长、休息时长、长休息时长、长休息间隔、自动开始、提示音、系统托盘、启动动画与主题。
+
+配置与统计数据保存在：
+
+```
+%USERPROFILE%\.pomodoro_timer\
+├── config.json    # 配置
+└── stats.json     # 统计
+```
+
+## 项目结构
+
+```
+tomato-clock/
 ├── main.py                     # 程序入口
 ├── 番茄钟.spec                  # PyInstaller 打包配置
 ├── version_info.txt            # exe 版本信息（由脚本生成）
@@ -56,90 +134,60 @@ pip install -r requirements.txt
 ├── assets/
 │   ├── tomato.png              # 托盘图标（与 exe 同源）
 │   └── tomato.ico              # exe 图标
+├── installer/
+│   ├── TomatoClock.iss         # Inno Setup 安装脚本
+│   └── ChineseSimplified.isl   # 安装向导中文翻译
 ├── tools/
-│   └── make_icon.py            # 自绘图标生成脚本
+│   ├── make_icon.py            # 自绘图标生成脚本
+│   ├── make_version_info.py    # 生成 exe 版本信息
+│   └── build_release.ps1       # 一键构建（打包 + 便携 zip + 安装包）
 └── tests/                      # 单元测试
 ```
 
-图标为程序自绘（`python tools/make_icon.py` 可重新生成 `assets/tomato.png` / `assets/tomato.ico`），托盘与 exe 使用同一份。
+图标为程序自绘；运行 `python tools/make_icon.py` 可重新生成 `assets/tomato.png` / `assets/tomato.ico`，托盘与 exe 使用同一份。
 
-### 运行步骤(脚本)
-1. 确保你已经安装了 Python 3.x。
-2. 下载或克隆本项目到本地。
-3. 打开命令行终端，导航到项目目录：
-```bash
-cd D:\coding\番茄钟
-```
-4. 运行：
-```bash
-python main.py
-```
+## 开发
 
-### 运行测试
-```bash
-python -m unittest discover -s tests -v
-```
+### 构建发布
 
-### 打包为 exe
+发布产物包括安装包与便携 zip。一键构建：
+
 ```bash
 pip install -r requirements.txt pyinstaller
-python tools/make_version_info.py   # 依据 __version__ 生成版本信息
-pyinstaller 番茄钟.spec
+winget install JRSoftware.InnoSetup      # 仅首次，用于编译安装包
+powershell -ExecutionPolicy Bypass -File tools\build_release.ps1
 ```
-生成物在 `dist/TomatoClock-v<版本>.exe`（如 `dist/TomatoClock-v2.1.0.exe`），文件名与文件属性中都带版本号（英文命名，便于在 GitHub Release 等处正常显示）。图标与托盘图标同源：
-- exe 图标：`assets/tomato.ico`
-- 托盘图标：`assets/tomato.png`（打包时通过 `datas` 一并带入）
+
+脚本依次执行：读取 `__version__` → 生成版本信息 → PyInstaller 打包（onedir）→ 压缩便携 zip → 编译安装包。产物：
+
+- `dist/TomatoClock-v<版本>/`：免安装文件夹
+- `dist/installer/TomatoClock-Setup-v<版本>.exe`：安装包
+- `dist/installer/TomatoClock-Portable-v<版本>.zip`：便携版
+
+单独打包：
+
+```bash
+python tools/make_version_info.py
+pyinstaller 番茄钟.spec
+iscc /DAppVersion=<版本> installer/TomatoClock.iss
+```
+
+> 打包采用 **onedir（文件夹）**而非单文件：启动时无需解压到临时目录，启动更快。
 
 ### 版本管理
-- 版本号唯一来源：`pomodoro/__init__.py` 的 `__version__`
-- 每次发布：更新 `__version__` → 运行 `python tools/make_version_info.py` → 更新 `CHANGELOG.md` → 打标签
+
+- 版本号唯一来源为 `pomodoro/__init__.py` 的 `__version__`
+- 发布流程：更新 `__version__` → 运行 `python tools/make_version_info.py` → 更新 `CHANGELOG.md` → 打标签
+
 ```bash
-git tag v2.1.0
-git push origin master --tags
+git tag v2.3.0
+git push origin main --tags
 ```
 
-### 运行步骤(可执行文件)
-1. 下载可执行文件
-2. 双击运行exe文件
-3. 若报错，可能是缺少依赖库，可自行安装依赖库
+## 问题反馈
 
-## 使用方法
-### 主界面操作
-- **开始/暂停**：点击“开始”按钮启动计时器，运行中可点击“暂停”按钮暂停计时。
-- **重置**：点击“重置”按钮将计时器重置为初始状态。
-- **设置**：点击“设置”按钮可自定义时间、主题、提示音与系统托盘等选项。
-- **任务**：点击顶部任务文字可编辑当前任务名称。
-- **历史记录**：点击统计行（“今日 … ›”）查看按天汇总的历史，含每日番茄数、专注时长与任务明细；每行“✕”删除该天，右上“清空”删除全部。
-- **计时模式切换**：点击“倒计时/正计时”可在两种模式间切换。
-- **主题**：点击标题栏的“◐”在深色/浅色主题间切换。
-- **提示音**：点击标题栏的“♪”开关提示音。
-- **最小化**：点击“—”按钮可将主窗口最小化到小球悬浮窗。
-- **关闭**：点击“×”按钮关闭应用。
-
-### 键盘快捷键
-- `空格`：开始 / 暂停
-- `R`：重置
-- `S`：打开设置
-- `H`：查看历史记录
-- `Esc`：收起为小球悬浮窗
-
-### 悬浮窗操作
-- **拖动**：点击并拖动小球悬浮窗可移动其位置。
-- **恢复**：双击小球悬浮窗可恢复主窗口。
-
-## 配置说明
-在主界面点击“设置”按钮，可打开设置窗口，自定义工作时长、休息时长、长休息时长、长休息间隔、主题、自动开始、提示音与系统托盘，点击“保存”按钮应用设置。
-
-配置与统计数据保存在用户目录下的 `.pomodoro_timer` 文件夹中（`config.json` 与 `stats.json`）。
-
-## 贡献指南
-如果你想为这个项目做出贡献，可以按照以下步骤操作：
-1. Fork本项目到你的GitHub账户。
-2. 创建一个新的分支：`git checkout -b feature/your-feature-name`。
-3. 提交你的更改：`git commit -m "Add some feature"`。
-4. 推送分支到你的远程仓库：`git push origin feature/your-feature-name`。
-5. 在GitHub上创建一个Pull Request。
+如遇到问题或有功能建议，欢迎通过 [Issues](https://github.com/wsj060618/tomato-clock/issues) 反馈。
 
 ## 许可证
-本项目基于 [MIT License](LICENSE) 开源。
 
+本项目基于 [MIT License](LICENSE) 开源，Copyright (c) 2026 wsj060618。

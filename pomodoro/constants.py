@@ -28,6 +28,7 @@ DEFAULT_CONFIG = {
     "task": "",
     "task_date": "",
     "window_pos": None,
+    "animations": True,
 }
 
 # 主题调色板
