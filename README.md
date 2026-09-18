@@ -107,6 +107,8 @@ python -m unittest discover -s tests -v
 └── stats.json     # 统计
 ```
 
+卸载时会弹窗询问是否一并删除该目录（默认保留）。
+
 ## 项目结构
 
 ```

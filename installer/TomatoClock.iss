@@ -32,6 +32,9 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+AppMutex=TomatoClock_SingleInstance,Local\TomatoClock_SingleInstance
+CloseApplications=yes
+RestartApplications=no
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "ChineseSimplified.isl"
@@ -51,4 +54,18 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: deskto
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "立即运行 {#AppName}"; Flags: nowait postinstall skipifsilent
 
-; 卸载只删程序目录（Inno 默认行为）；用户数据在 %USERPROFILE%\.pomodoro_timer，故意保留
+; 卸载时程序目录由 Inno 自动删除；用户数据会弹窗询问是否一并删除
+
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  DataDir: String;
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    DataDir := ExpandConstant('{userprofile}\.pomodoro_timer');
+    if SuppressibleMsgBox('是否同时删除本地配置与统计数据？' + #13#10#13#10 + DataDir,
+        mbConfirmation, MB_YESNO, IDNO) = IDYES then
+      DelTree(DataDir, True, True, True);
+  end;
+end;
