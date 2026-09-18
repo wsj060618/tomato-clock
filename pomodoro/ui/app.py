@@ -42,6 +42,7 @@ class PomodoroApp:
         self._offset_y = 0
         self._intro_done = False
         self._intro_start = 0.0
+        self._dialogs = {}
 
         self.toast = ToastManager(self)
         self.ball = FloatingBall(self)
@@ -84,6 +85,8 @@ class PomodoroApp:
         self.root.bind_all("<KeyPress-H>", lambda e: self._hotkey(self.show_history))
 
     def _hotkey(self, action):
+        if self._has_open_dialog():
+            return None
         try:
             focused = self.root.focus_get()
         except (KeyError, tk.TclError):
@@ -92,6 +95,32 @@ class PomodoroApp:
             return None
         action()
         return "break"
+
+    # ----------------------------- 弹窗管理 -----------------------------
+    def _dialog_alive(self, key):
+        win = self._dialogs.get(key)
+        if win is None:
+            return False
+        try:
+            return bool(win.winfo_exists())
+        except tk.TclError:
+            return False
+
+    def _has_open_dialog(self):
+        return any(self._dialog_alive(key) for key in list(self._dialogs))
+
+    def _register_dialog(self, key, win):
+        if win is not None:
+            self._dialogs[key] = win
+
+    def _close_dialogs(self):
+        for win in list(self._dialogs.values()):
+            try:
+                if win.winfo_exists():
+                    win.destroy()
+            except tk.TclError:
+                pass
+        self._dialogs.clear()
 
     # ----------------------------- 启动动画 -----------------------------
     def _start_intro(self):
@@ -138,6 +167,7 @@ class PomodoroApp:
     # ----------------------------- 主界面 -----------------------------
     def build_ui(self):
         p = self.palette
+        self._drawn_accent = None
         self.bg_canvas = tk.Canvas(self.root, width=self.W, height=self.H,
                                    bg=p["magic"], highlightthickness=0)
         self.bg_canvas.place(x=0, y=0)
@@ -258,6 +288,7 @@ class PomodoroApp:
         if name not in THEMES:
             return
         self._finish_intro()
+        self._close_dialogs()
         self.theme_name = name
         self.palette = THEMES[name]
         self.config["theme"] = name
@@ -311,6 +342,7 @@ class PomodoroApp:
         title, message = self.core.last_event
         self.start_pause_btn.set_text("开始")
         self.render()
+        self.update_stats_label()
         if self.ball.visible:
             self.ball.update()
         self.notify(title, message)
@@ -330,9 +362,12 @@ class PomodoroApp:
 
         self.accent = self.core.phase_color(self.palette)
         self.ring_canvas.itemconfig(self.ring_arc, outline=self.accent)
-        self.start_pause_btn.set_colors(self.accent, blend(self.accent, "#FFFFFF", 0.25))
-        self.mode_control.accent = self.accent
-        self.mode_control._draw()
+        if self.accent != self._drawn_accent:
+            self._drawn_accent = self.accent
+            self.start_pause_btn.set_colors(self.accent,
+                                            blend(self.accent, "#FFFFFF", 0.25))
+            self.mode_control.accent = self.accent
+            self.mode_control._draw()
         self.title_label.config(fg=self.accent)
         self.status_label.config(text=self.core.phase_text(), fg=self.accent)
 
@@ -353,7 +388,9 @@ class PomodoroApp:
             self.ball.update()
 
     def show_history(self):
-        HistoryDialog(self).show()
+        if self._dialog_alive("history"):
+            return
+        self._register_dialog("history", HistoryDialog(self).show())
 
     # ----------------------------- 任务 -----------------------------
     def set_task(self, name):
@@ -372,11 +409,15 @@ class PomodoroApp:
         self.root.after(30000, self._check_day_rollover)
 
     def edit_task(self):
-        TaskDialog(self).show()
+        if self._dialog_alive("task"):
+            return
+        self._register_dialog("task", TaskDialog(self).show())
 
     # ----------------------------- 设置 -----------------------------
     def show_settings(self):
-        SettingsDialog(self).show()
+        if self._dialog_alive("settings"):
+            return
+        self._register_dialog("settings", SettingsDialog(self).show())
 
     # ----------------------------- 提示 -----------------------------
     def notify(self, title, message):

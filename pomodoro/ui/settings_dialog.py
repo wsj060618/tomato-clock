@@ -136,3 +136,4 @@ class SettingsDialog:
 
         # 窗口拖动
         enable_drag(win, canvas, win)
+        return win

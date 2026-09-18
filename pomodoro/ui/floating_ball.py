@@ -48,8 +48,15 @@ class FloatingBall:
             ball.configure(bg=app.accent)
             self._set_transparent(app.accent)
 
-        x = ball.winfo_screenwidth() - d - sp(10)
-        ball.geometry(f"{d}x{d}+{x}+{sp(10)}")
+        area = layered.work_area(ball.winfo_pointerx(), ball.winfo_pointery())
+        if area is not None:
+            left, top, right, _bottom = area
+            x = right - d - sp(10)
+            y = top + sp(10)
+        else:
+            x = ball.winfo_screenwidth() - d - sp(10)
+            y = sp(10)
+        ball.geometry(f"{d}x{d}+{x}+{y}")
 
         if self._layered:
             ball.update_idletasks()
@@ -60,7 +67,7 @@ class FloatingBall:
             self.time_label = tk.Label(ball, font=(FONT, 11, "bold"),
                                        fg=p["text"], bg=p["card"])
             self.time_label.place(relx=0.5, rely=0.5, anchor="center")
-        self._render()
+        self.update()
 
         ball.bind("<Button-1>", self._on_drag_start)
         ball.bind("<B1-Motion>", self._on_drag_motion)

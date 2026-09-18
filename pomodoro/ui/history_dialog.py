@@ -32,6 +32,7 @@ class HistoryDialog:
         self.container = None
         self.summary_label = None
         self.empty_label = None
+        self._expanded = False
 
     def show(self):
         app = self.app
@@ -88,6 +89,7 @@ class HistoryDialog:
         enable_drag(win, canvas, win)
 
         self._refresh()
+        return win
 
     # ----------------------------- 列表 -----------------------------
     def _refresh(self):
@@ -110,10 +112,37 @@ class HistoryDialog:
                      font=(FONT, 10), fg=self.app.palette["muted"], bg=self.app.palette["card"],
                      justify="center").pack(pady=sp(40))
         else:
-            for key in sorted(daily.keys(), reverse=True):
+            keys = sorted(daily.keys(), reverse=True)
+            today = date.today().strftime("%Y-%m-%d")
+            older = [k for k in keys if k != today]
+            if self._expanded or not older:
+                visible = keys
+            else:
+                visible = [k for k in keys if k == today]
+            for key in visible:
                 self._build_row(key, daily[key])
+            if not visible:
+                tk.Label(self.inner, text="今天还没有完成记录",
+                         font=(FONT, 10), fg=self.app.palette["muted"],
+                         bg=self.app.palette["card"]).pack(pady=sp(24))
+            if older:
+                self._build_more_button(len(older))
         self.inner.update_idletasks()
         self.container.configure(scrollregion=self.container.bbox("all"))
+
+    def _build_more_button(self, older_count):
+        p = self.app.palette
+        text = "收起" if self._expanded else f"显示更多（{older_count} 天）"
+        btn = tk.Label(self.inner, text=text, font=(FONT, 9), fg=p["muted"],
+                       bg=p["card"], cursor="hand2")
+        btn.pack(pady=sp(10))
+        btn.bind("<Button-1>", lambda e: self._toggle_expanded())
+        btn.bind("<Enter>", lambda e: btn.config(fg=self.app.palette["work"]))
+        btn.bind("<Leave>", lambda e: btn.config(fg=p["muted"]))
+
+    def _toggle_expanded(self):
+        self._expanded = not self._expanded
+        self._refresh()
 
     def _build_row(self, key, data):
         p = self.app.palette

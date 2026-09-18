@@ -89,6 +89,34 @@ class TimerCoreTest(unittest.TestCase):
         self.assertTrue(core.in_long_break)
         self.assertEqual(core.current_duration, core.long_break_duration)
 
+    def test_long_break_counts_within_session(self):
+        stats = {"daily": {}, "cycle_completed": 1}
+        core = self.make_core(stats=stats, work_duration=1, cycles_before_long_break=2)
+
+        def finish_phase():
+            core.is_running = True
+            core.start_time = 0
+            core.elapsed_time = core.current_duration + 1
+            core.tick()
+
+        finish_phase()
+        self.assertFalse(core.is_working)
+        self.assertFalse(core.in_long_break)
+        self.assertEqual(core.cycles_in_set, 1)
+
+        finish_phase()
+        self.assertTrue(core.is_working)
+
+        finish_phase()
+        self.assertTrue(core.in_long_break)
+        self.assertEqual(core.cycles_in_set, 0)
+
+    def test_reset_restarts_long_break_cycle(self):
+        core = self.make_core(work_duration=1, cycles_before_long_break=2)
+        core.cycles_in_set = 1
+        core.reset()
+        self.assertEqual(core.cycles_in_set, 0)
+
     def test_break_returns_to_work(self):
         core = self.make_core()
         core.is_working = False
@@ -131,6 +159,11 @@ class TimerCoreTest(unittest.TestCase):
         core.current_day = "2000-01-01"
         self.assertTrue(core.check_day_rollover())
         self.assertEqual(core.task_name, "")
+
+    def test_task_not_inherited_on_launch(self):
+        core = self.make_core(task="旧任务", task_date=storage.today_key())
+        self.assertEqual(core.task_name, "")
+        self.assertEqual(core.config["task"], "")
 
     def test_apply_settings(self):
         core = self.make_core()

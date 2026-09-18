@@ -81,6 +81,7 @@ class ConfirmDialog(_BaseDialog):
         def cancel(_=None):
             self.result = False
             win.destroy()
+            return "break"
 
         accent = p["work"] if self._danger else self.app.accent
         RoundedButton(win, self._cancel_text, cancel, width=110, height=40, radius=20,
@@ -106,6 +107,7 @@ class MessageDialog(_BaseDialog):
 
         def close(_=None):
             win.destroy()
+            return "break"
 
         RoundedButton(win, self._button_text, close, width=120, height=40, radius=20,
                       fill=self.app.accent, fill_hover=blend(self.app.accent, "#FFFFFF", 0.25),

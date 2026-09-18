@@ -23,13 +23,12 @@ class TimerCore:
         self.countdown_mode = bool(config["countdown_mode"])
 
         self.current_day = storage.today_key()
-        if config.get("task_date") != self.current_day:
-            self.task_name = ""
-            config["task_date"] = self.current_day
-        else:
-            self.task_name = config.get("task", "")
+        self.task_name = ""
+        config["task"] = ""
+        config["task_date"] = self.current_day
 
         self.cycle_completed = int(stats.get("cycle_completed", 0))
+        self.cycles_in_set = 0
 
         self.current_duration = self.work_duration
         self.is_working = True
@@ -74,6 +73,7 @@ class TimerCore:
         self.elapsed_time = 0.0
         self.is_working = True
         self.in_long_break = False
+        self.cycles_in_set = 0
         self.current_duration = self.work_duration
 
     def _current(self, now):
@@ -107,7 +107,9 @@ class TimerCore:
         self.elapsed_time = 0.0
         if self.is_working:
             self.record_pomodoro()
-            if self.cycle_completed % self.cycles_before_long_break == 0:
+            self.cycles_in_set += 1
+            if self.cycles_in_set >= self.cycles_before_long_break:
+                self.cycles_in_set = 0
                 self.in_long_break = True
                 self.current_duration = self.long_break_duration
                 event = ("番茄完成 🍅", "进入长休息，好好放松一下")

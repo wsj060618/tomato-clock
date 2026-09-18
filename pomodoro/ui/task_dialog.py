@@ -46,8 +46,12 @@ class TaskDialog:
             app.set_task(entry.get())
             dlg.destroy()
 
+        def close(_=None):
+            dlg.destroy()
+            return "break"
+
         entry.bind("<Return>", confirm)
-        dlg.bind("<Escape>", lambda e: dlg.destroy())
+        dlg.bind("<Escape>", close)
 
         RoundedButton(dlg, "取消", dlg.destroy, width=90, height=36, radius=18,
                       fill=p["card2"], fill_hover=p["card3"], fg=p["text"],
@@ -58,3 +62,4 @@ class TaskDialog:
             relx=1.0, x=sp(-24), y=sp(102), anchor="ne")
 
         enable_drag(dlg, canvas, dlg)
+        return dlg

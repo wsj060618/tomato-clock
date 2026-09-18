@@ -42,8 +42,49 @@ class _BITMAPINFO(ctypes.Structure):
     _fields_ = [("bmiHeader", _BITMAPINFOHEADER), ("bmiColors", ctypes.c_uint32 * 3)]
 
 
+class _RECT(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long),
+                ("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+
+class _MONITORINFO(ctypes.Structure):
+    _fields_ = [("cbSize", ctypes.c_uint32), ("rcMonitor", _RECT),
+                ("rcWork", _RECT), ("dwFlags", ctypes.c_uint32)]
+
+
+MONITOR_DEFAULTTONEAREST = 2
+
+
 def available():
     return os.name == "nt"
+
+
+def work_area(x, y):
+    """返回点 (x, y) 所在显示器的工作区 (left, top, right, bottom)。
+
+    非 Windows 或调用失败时返回 None，调用方退回主屏计算。
+    """
+    if not available():
+        return None
+    try:
+        user32 = ctypes.windll.user32
+        user32.MonitorFromPoint.restype = ctypes.c_void_p
+        user32.MonitorFromPoint.argtypes = [_POINT, ctypes.c_uint32]
+        user32.GetMonitorInfoW.restype = ctypes.c_int
+        user32.GetMonitorInfoW.argtypes = [ctypes.c_void_p,
+                                           ctypes.POINTER(_MONITORINFO)]
+        mon = user32.MonitorFromPoint(_POINT(int(x), int(y)),
+                                      MONITOR_DEFAULTTONEAREST)
+        if not mon:
+            return None
+        info = _MONITORINFO()
+        info.cbSize = ctypes.sizeof(_MONITORINFO)
+        if not user32.GetMonitorInfoW(ctypes.c_void_p(mon), ctypes.byref(info)):
+            return None
+        r = info.rcWork
+        return r.left, r.top, r.right, r.bottom
+    except Exception:
+        return None
 
 
 def _hwnd_of(widget):
