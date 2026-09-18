@@ -63,7 +63,7 @@ var
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    DataDir := ExpandConstant('{userprofile}\.pomodoro_timer');
+    DataDir := ExpandConstant('{%USERPROFILE}\.pomodoro_timer');
     if SuppressibleMsgBox('是否同时删除本地配置与统计数据？' + #13#10#13#10 + DataDir,
         mbConfirmation, MB_YESNO, IDNO) = IDYES then
       DelTree(DataDir, True, True, True);

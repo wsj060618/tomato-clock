@@ -12,4 +12,4 @@
 """
 
 # 版本号唯一来源（SemVer）。改这里即可，exe 版本信息由 tools/make_version_info.py 同步。
-__version__ = "2.3.2"
+__version__ = "2.3.3"

@@ -3,6 +3,11 @@
 本项目版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)（SemVer）。
 版本号唯一来源为 `pomodoro/__init__.py` 中的 `__version__`。
 
+## [2.3.3] - 2026-09-18
+
+### 修复
+- 卸载时 `[Code]` 使用了 Inno Setup 不存在的常量 `{userprofile}`，触发 “Unknown constant” 运行时错误；改用环境变量常量 `{%USERPROFILE}`
+
 ## [2.3.2] - 2026-09-18
 
 ### 修复
